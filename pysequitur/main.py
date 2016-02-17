@@ -197,19 +197,21 @@ class Sequencer(list):
     
     def grammar_recursive(self, rule, recursive=False):
         """ Grammar helper function """
+        if not isinstance(rule, list):
+            return str(rule)
         s = ''
         for i, r in enumerate(rule):
             if type(r) is list:
                 if i == 0:
-                    s += self.grammar_recursive(r, recursive)
+                    s += str(self.grammar_recursive(r, recursive))
                 elif type(r[1]) is RuleIndex:
                     s += "%s" % (self.grammar_recursive(self[r[1]], recursive) if recursive else RULE_INDEX_STR % r[1])
                 else:
-                    s += self.grammar_recursive(r[1], recursive)
+                    s += str(self.grammar_recursive(r[1], recursive))
             elif type(r) is RuleIndex:
                 s += "%s" % (self.grammar_recursive(self[r], recursive) if recursive else RULE_INDEX_STR % r)
             else:
-                s += r.replace("\r\n", NEWLINE_REPLACEMENT).replace("\n", NEWLINE_REPLACEMENT).replace(" ", SPACE_REPLACEMENT)
+                s += str(r).replace("\r\n", NEWLINE_REPLACEMENT).replace("\n", NEWLINE_REPLACEMENT).replace(" ", SPACE_REPLACEMENT)
         return s
     
     def grammar_sequence(self, join=False):
@@ -382,11 +384,11 @@ class Sequencer2(list):
         s = ''
         for r in rule:
             if type(r) is list:
-                s += self.grammar_recursive(r, recursive)
+                s += str(self.grammar_recursive(r, recursive))
             elif type(r) is RuleIndex:
                 s += "%s" % (self.grammar_recursive(self[r], recursive) if recursive else RULE_INDEX_STR % r)
             else:
-                s += r.replace("\r\n", NEWLINE_REPLACEMENT).replace("\n", NEWLINE_REPLACEMENT).replace(" ", SPACE_REPLACEMENT)
+                s += str(r).replace("\r\n", NEWLINE_REPLACEMENT).replace("\n", NEWLINE_REPLACEMENT).replace(" ", SPACE_REPLACEMENT)
         return s
 
     def grammar_sequence(self, join=False):
@@ -422,7 +424,6 @@ class Sequencer2(list):
         String representation of the sequencer. 
         This merges only the first of the rules i.e. the main sequence
         """
-        #return ''.join([str(i) for i in self[0]])
         return ''.join([RULE_INDEX_STR % i for i in self[0]])
 
 
