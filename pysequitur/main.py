@@ -261,7 +261,7 @@ class Sequencer(list):
         String representation of the sequencer. 
         This merges only the first of the rules i.e. the main sequence
         """
-        return ''.join([RULE_INDEX_STR % i for i in [item[1] for item in self[0]]])
+        return ''.join([(RULE_INDEX_STR % i) if isinstance(i, RuleIndex) else str(i) for i in [item[1] for item in self[0]]])
 
 
 class Sequencer2(list):
@@ -424,7 +424,7 @@ class Sequencer2(list):
         String representation of the sequencer. 
         This merges only the first of the rules i.e. the main sequence
         """
-        return ''.join([RULE_INDEX_STR % i for i in self[0]])
+        return ''.join([(RULE_INDEX_STR % i) if isinstance(i, RuleIndex) else str(i) for i in self[0]])
 
 
 def flatten_list(items):
