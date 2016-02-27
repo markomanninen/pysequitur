@@ -2,21 +2,16 @@
 # -*- coding: utf-8 -*-
 # file: main.py
 
+from .sequiturpython.grammar import Grammar, Symbol
+from .sequiturpython.symbol import RuleIndex, RULE_INDEX_STR
+
 # Few constants for presentation logics
-RULE_INDEX_STR = "^%s"
+#RULE_INDEX_STR = "^%s"
 SEQUENCE_KEY = "S"
 ARROW = "→"
 NEWLINE_REPLACEMENT = "↵"
 SPACE_REPLACEMENT = "_"
-
-class RuleIndex(int):
-    """
-    Reason to use separate class for rule index values is that 
-    they must be separated from possible numerical sequence values
-    """
-    def __repr__(self):
-        return RULE_INDEX_STR % self
-
+TAB_REPLACEMENT = "↹"
 
 class Rule(list):
     """ Rule class keeps track of digrams on a list """
@@ -131,6 +126,7 @@ class Sequencer(list):
             return
         
         main = self[0]
+        util = False
         # loop as many times as there are no more repeating digrams
         while True:
             # create a new digram from previous digram last item and coming item c
@@ -151,8 +147,10 @@ class Sequencer(list):
                 # decrease counter of the replaced rules
                 if isinstance(main[j-1][1], RuleIndex):
                     self[main[j-1][1]].dec()
+                    util = True
                 if isinstance(main[j+1][0], RuleIndex):
                     self[main[j+1][0]].dec()
+                    util = True
                 # replace certain items with a new rule item: c
                 main[-1][1] = main[j+1][0] = main[j-1][1] = c
                 del main[j]
@@ -182,6 +180,7 @@ class Sequencer(list):
                     # if the rightmost value of the removed rule is a RuleIndex, decrease counter
                     if isinstance(l[1], RuleIndex):
                         self[l[1]].dec()
+                        util = True
                 # digram was not found from the main sequence or from the rules
                 else:
                     # append new object to the main sequence
@@ -192,7 +191,7 @@ class Sequencer(list):
                     # break while loop
                     break
         # if rule utility is on (as it is recommended by default), remove redundant rules
-        if utilize:
+        if utilize and util:
             self.utilize()
     
     def grammar_recursive(self, rule, recursive=False):
@@ -201,17 +200,21 @@ class Sequencer(list):
             return str(rule)
         s = ''
         for i, r in enumerate(rule):
-            if type(r) is list:
+            if isinstance(r, list):
                 if i == 0:
                     s += str(self.grammar_recursive(r, recursive))
-                elif type(r[1]) is RuleIndex:
+                elif isinstance(r[1], RuleIndex):
                     s += "%s" % (self.grammar_recursive(self[r[1]], recursive) if recursive else RULE_INDEX_STR % r[1])
                 else:
                     s += str(self.grammar_recursive(r[1], recursive))
-            elif type(r) is RuleIndex:
+            elif isinstance(r, RuleIndex):
                 s += "%s" % (self.grammar_recursive(self[r], recursive) if recursive else RULE_INDEX_STR % r)
             else:
-                s += str(r).replace("\r\n", NEWLINE_REPLACEMENT).replace("\n", NEWLINE_REPLACEMENT).replace(" ", SPACE_REPLACEMENT)
+                s += str(r).replace("\r\n", NEWLINE_REPLACEMENT).\
+                            replace("\n", NEWLINE_REPLACEMENT).\
+                            replace("\r", "").\
+                            replace("\t", TAB_REPLACEMENT).\
+                            replace(" ", SPACE_REPLACEMENT)
         return s
     
     def grammar_sequence(self, join=False):
@@ -308,6 +311,7 @@ class Sequencer2(list):
         if len(main) < 2:
             main.append(c)
         else:
+            util = False
             # loop as many times as there are no more repeating digrams
             while True:
                 # create new digram
@@ -350,6 +354,7 @@ class Sequencer2(list):
                         # if removed object is an index, decrease count
                         if isinstance(l, RuleIndex) and s[l] is not None:
                             s[l].dec()
+                            util = True
                     else:
                         # append new object to the main sequence
                         main.append(c)
@@ -357,7 +362,7 @@ class Sequencer2(list):
                         if isinstance(c, RuleIndex):
                             s[c].inc()
                         break
-            if utilize:
+            if utilize and util:
                 self.utilize()
     
     def utilize(self):
@@ -383,12 +388,16 @@ class Sequencer2(list):
     def grammar_recursive(self, rule, recursive=False):
         s = ''
         for r in rule:
-            if type(r) is list:
+            if isinstance(r, list):
                 s += str(self.grammar_recursive(r, recursive))
-            elif type(r) is RuleIndex:
+            elif isinstance(r, RuleIndex):
                 s += "%s" % (self.grammar_recursive(self[r], recursive) if recursive else RULE_INDEX_STR % r)
             else:
-                s += str(r).replace("\r\n", NEWLINE_REPLACEMENT).replace("\n", NEWLINE_REPLACEMENT).replace(" ", SPACE_REPLACEMENT)
+                s += str(r).replace("\r\n", NEWLINE_REPLACEMENT).\
+                            replace("\n", NEWLINE_REPLACEMENT).\
+                            replace("\r", "").\
+                            replace("\t", TAB_REPLACEMENT).\
+                            replace(" ", SPACE_REPLACEMENT)
         return s
 
     def grammar_sequence(self, join=False):
@@ -426,6 +435,85 @@ class Sequencer2(list):
         """
         return ''.join([(RULE_INDEX_STR % i) if isinstance(i, RuleIndex) else str(i) for i in self[0]])
 
+
+class Sequencer3():
+    """
+    Main class to use algorithm. 
+    This implements Sequitur from the JavaScript version to Python based approach for the algo:
+    https://github.com/mspandit/sequitur-python
+    """
+    def __init__(self, seq = None, utilize = True):
+        self.first = None
+        self.grammar_cache = None
+        self.g = Grammar()
+        self.production = self.g.root_production
+        if seq:
+            for c in seq:
+                self.stream(c, utilize)
+
+    def stream(self, c, utilize = True):
+        self.production.last().insert_after(Symbol.factory(self.g, c))
+        if self.first is None:
+            self.first = True
+            return
+        match = self.g.get_index(self.production.last().prev)
+        if not match:
+            self.g.add_index(self.production.last().prev)
+        elif match.next != self.production.last().prev:
+            self.production.last().prev.process_match(match)
+
+    def grammar_recursive(self, rule, recursive=False):
+        s = ''
+        for r in rule:
+            if isinstance(r, list):
+                s += str(self.grammar_recursive(r, recursive))
+            elif isinstance(r, RuleIndex):
+                s += "%s" % (self.grammar_recursive(self.get(True)[r], recursive) if recursive else RULE_INDEX_STR % r)
+            else:
+                s += str(r).replace("\r\n", NEWLINE_REPLACEMENT).\
+                            replace("\n", NEWLINE_REPLACEMENT).\
+                            replace("\r", "").\
+                            replace("\t", TAB_REPLACEMENT).\
+                            replace(" ", SPACE_REPLACEMENT)
+        return s
+
+    def grammar_sequence(self, join=False):
+        """ Retrieve the main sequence / rule from the sequencer """
+        x = self.get(False)[0]
+        return {SEQUENCE_KEY: self.grammar_recursive(x, False) if join else x}
+
+    def grammar_rules(self, join=False, recursive=False):
+        """ Retrieve rest of the rules from the sequencer """
+        rules = self.get(False)[1:]
+        return {(i+1): self.grammar_recursive(x, recursive) if join else x for i, x in enumerate(rules)}
+
+    def resolve(self, flatten=True):
+        """
+        When sequencer has succesfully created rules from the given input, 
+        resolve method can be used to decode compressed sequence back to the original input.
+        Flatten argument can be used to keep/unkeep hierarchic structure present on a returned list.
+        """
+        def _recur(i):
+            if not isinstance(i, RuleIndex):
+                return i
+            return [_recur(x) for x in self.get()[i]]
+
+        # start from main sequence / first rule
+        items = [_recur(item) for item in self.get()[0]]
+        # should we flatten the result?
+        return flatten_list(items) if flatten else items
+
+    def get(self, cache=True):
+        if not self.grammar_cache or not cache:
+            self.grammar_cache = self.g.get_grammar()
+        return self.grammar_cache
+
+    def __str__(self):
+        """
+        String representation of the sequencer. 
+        This merges only the first of the rules i.e. the main sequence
+        """
+        return ''.join([(RULE_INDEX_STR % i) if isinstance(i, RuleIndex) else str(i) for i in self.get(False)[0]])
 
 def flatten_list(items):
     """ List flattener helper function """
