@@ -39,3 +39,18 @@ S → ^1^2^3^4^3^5↵↵^6^2^7^4^7^5
 11 → old
 12 → in
 </code></pre>
+
+## Performance
+
+Performance benchmarks were run comparing different Sequitur implementations available in this repository. `Sequencer3` (which utilizes the `pysequitur.sequiturpython` module) was found to be significantly faster than `Sequencer` and `Sequencer2`.
+
+### Benchmark Results
+
+| Implementation | Input File     | Average Execution Time (seconds) |
+|----------------|----------------|---------------------------------|
+| Sequencer (Original) | genesis1.txt   | 0.1834                          |
+| Sequencer3 (Optimized) | genesis1.txt   | 0.0731                          |
+| Sequencer (Original) | revelation.txt | 37.7859                         |
+| Sequencer3 (Optimized) | revelation.txt | 1.2384                          |
+
+*(Note: Times are based on a single run due to overall execution duration)*
