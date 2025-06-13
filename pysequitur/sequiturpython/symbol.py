@@ -20,10 +20,7 @@ class Symbol(object):
 
     def print_terminal(self):
         """docstring for print_terminal"""
-        if ' ' == self.value():
-            return '_'
-        else:
-            return self.value()
+        return self.value()
 
     def print_rule_expansion(self, _, output_array, line_length):
         """docstring for print_rule_expansion"""
