@@ -42,15 +42,32 @@ S → ^1^2^3^4^3^5↵↵^6^2^7^4^7^5
 
 ## Performance
 
-Performance benchmarks were run comparing different Sequitur implementations available in this repository. `Sequencer3` (which utilizes the `pysequitur.sequiturpython` module) was found to be significantly faster than `Sequencer` and `Sequencer2`.
+Performance benchmarks were run comparing the three Sequitur implementations available in this repository: `Sequencer`, `Sequencer2`, and `Sequencer3`. `Sequencer3` (which utilizes the `pysequitur.sequiturpython` module) was found to be significantly faster.
 
 ### Benchmark Results
 
-| Implementation | Input File     | Average Execution Time (seconds) |
-|----------------|----------------|---------------------------------|
-| Sequencer (Original) | genesis1.txt   | 0.1834                          |
-| Sequencer3 (Optimized) | genesis1.txt   | 0.0731                          |
-| Sequencer (Original) | revelation.txt | 37.7859                         |
-| Sequencer3 (Optimized) | revelation.txt | 1.2384                          |
+| Implementation | Input File     | Average Execution Time (seconds) | Notes                           |
+|----------------|----------------|---------------------------------|---------------------------------|
+| Sequencer      | genesis1.txt   | 0.1834                          | Baseline                        |
+| Sequencer2     | genesis1.txt   | 0.5065                          |                                 |
+| Sequencer3     | genesis1.txt   | 0.0731                          | Optimized/Recommended           |
+| Sequencer      | revelation.txt | 37.7859                         | Baseline                        |
+| Sequencer2     | revelation.txt | 138.9520                        |                                 |
+| Sequencer3     | revelation.txt | 1.2384                          | Optimized/Recommended           |
 
-*(Note: Times are based on a single run due to overall execution duration)*
+*(Note: Times are based on a single run due to overall execution duration with larger files.)*
+
+### Running Benchmarks
+
+The `benchmark.py` script can be used to test the performance of the Sequitur implementations.
+To run the script, use the following command structure:
+```bash
+python benchmark.py <input_file.txt> <SequencerVersion>
+```
+Replace `<input_file.txt>` with the path to an input text file (e.g., `genesis1.txt`, `revelation.txt`).
+Replace `<SequencerVersion>` with one of `Sequencer`, `Sequencer2`, or `Sequencer3`.
+
+Example:
+```bash
+python benchmark.py genesis1.txt Sequencer3
+```
