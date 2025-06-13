@@ -1,5 +1,5 @@
 import unittest
-from grammar import Grammar
+from .grammar import Grammar
 
 class TestSequitur(unittest.TestCase):
     def test_sequitur(self):

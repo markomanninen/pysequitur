@@ -1,54 +1,59 @@
-import argparse
+#!/usr/bin/env python
 import time
-from pysequitur.main import Sequencer, Sequencer2, Sequencer3
+from pysequitur.main import Sequencer, Sequencer2, Sequencer3, Sequencer4
 
-NUM_RUNS = 1
+NUM_RUNS = 2
+FILE_PATHS = ["genesis1.txt", "iamsam.txt", "peaseporridge.txt"]
+SEQUENCER_CLASSES = [Sequencer, Sequencer2, Sequencer3, Sequencer4]
 
 def main():
-    parser = argparse.ArgumentParser(description="Benchmark different Sequitur versions.")
-    parser.add_argument("input_file_path", help="Path to the input file.")
-    parser.add_argument("sequitur_version", choices=['Sequencer', 'Sequencer2', 'Sequencer3'], help="Sequitur version to use.")
-    args = parser.parse_args()
+    print("Starting benchmarks...") # Added for debugging
+    results = {}
 
-    try:
-        with open(args.input_file_path, 'r') as f:
-            input_content = f.read()
-    except FileNotFoundError:
-        print(f"Error: Input file not found at {args.input_file_path}")
-        return
+    for file_path in FILE_PATHS:
+        results[file_path] = {}
+        try:
+            with open(file_path, 'r') as f:
+                input_content = f.read()
+        except FileNotFoundError:
+            print(f"Error: Input file not found at {file_path}")
+            continue
 
-    sequitur_class = None
-    if args.sequitur_version == 'Sequencer':
-        sequitur_class = Sequencer
-    elif args.sequitur_version == 'Sequencer2':
-        sequitur_class = Sequencer2
-    elif args.sequitur_version == 'Sequencer3':
-        sequitur_class = Sequencer3
-    total_duration = 0.0
-    print(f"Benchmarking {args.sequitur_version} with {args.input_file_path} ({NUM_RUNS} runs)...")
+        for sequencer_class in SEQUENCER_CLASSES:
+            sequencer_name = sequencer_class.__name__
+            total_duration = 0.0
+            print(f"Benchmarking {sequencer_name} with {file_path} ({NUM_RUNS} runs)...")
 
-    for i in range(NUM_RUNS):
-        start_time = time.perf_counter()
+            for i in range(NUM_RUNS):
+                start_time = time.perf_counter()
+                sequitur_instance = sequencer_class()
+                for char_index, character in enumerate(input_content):
+                    sequitur_instance.stream(character)
+                end_time = time.perf_counter()
+                duration = end_time - start_time
+                total_duration += duration
+                print(f"Run {i+1}: {duration:.4f} seconds")
 
-        sequitur_instance = sequitur_class()
-        for char_index, character in enumerate(input_content):
-            sequitur_instance.stream(character)
-            # Optional: print progress for very long inputs
-            # if (char_index + 1) % 10000 == 0:
-            #     print(f"Run {i+1}/{NUM_RUNS}, Processed {char_index + 1}/{len(input_content)} chars")
+            average_time = total_duration / NUM_RUNS
+            results[file_path][sequencer_name] = average_time
+            print(f"Average time for {sequencer_name} on {file_path}: {average_time:.4f} seconds\n")
 
-        end_time = time.perf_counter()
-        duration = end_time - start_time
-        total_duration += duration
-        print(f"Run {i+1}: {duration:.4f} seconds")
+    print("\n--- Preparing Consolidated Benchmark Report ---") # Added for debugging
+    print(f"Results: {results}") # Added for debugging
+    print("--- Consolidated Benchmark Report ---")
+    header = f"{'File':<20}"
+    for sequencer_class in SEQUENCER_CLASSES:
+        header += f" | {sequencer_class.__name__:<15}"
+    print(header)
+    print("-" * len(header))
 
-    average_time = total_duration / NUM_RUNS
-
-    print("\n--- Benchmark Results ---")
-    print(f"Input File:     {args.input_file_path}")
-    print(f"Sequitur Version: {args.sequitur_version}")
-    print(f"Number of Runs: {NUM_RUNS}")
-    print(f"Average Time:   {average_time:.4f} seconds")
+    for file_path in FILE_PATHS:
+        row = f"{file_path:<20}"
+        for sequencer_class in SEQUENCER_CLASSES:
+            sequencer_name = sequencer_class.__name__
+            avg_time = results.get(file_path, {}).get(sequencer_name, float('nan'))
+            row += f" | {avg_time:<15.4f}"
+        print(row)
 
 if __name__ == "__main__":
     main()

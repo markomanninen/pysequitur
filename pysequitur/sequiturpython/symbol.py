@@ -182,7 +182,7 @@ class Symbol(object):
 
     def hash_value(self):
         """docstring for hash_value"""
-        return "%s+%s" % (self.string_value(), self.next.string_value())
+        return (self.string_value(), self.next.string_value())
 
 class Terminal(Symbol):
     """docstring for Terminal"""

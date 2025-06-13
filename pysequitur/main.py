@@ -515,6 +515,88 @@ class Sequencer3():
         """
         return ''.join([(RULE_INDEX_STR % i) if isinstance(i, RuleIndex) else str(i) for i in self.get(False)[0]])
 
+
+class Sequencer4():
+    """
+    Main class to use algorithm.
+    This implements Sequitur from the JavaScript version to Python based approach for the algo:
+    https://github.com/mspandit/sequitur-python
+    (Functional copy of Sequencer3)
+    """
+    def __init__(self, seq = None, utilize = True):
+        self.first = None
+        self.grammar_cache = None
+        self.g = Grammar()
+        self.production = self.g.root_production
+        if seq:
+            for c in seq:
+                self.stream(c, utilize)
+
+    def stream(self, c, utilize = True):
+        self.production.last().insert_after(Symbol.factory(self.g, c))
+        if self.first is None:
+            self.first = True
+            return
+        match = self.g.get_index(self.production.last().prev)
+        if not match:
+            self.g.add_index(self.production.last().prev)
+        elif match.next != self.production.last().prev:
+            self.production.last().prev.process_match(match)
+
+    def grammar_recursive(self, rule, recursive=False):
+        s = ''
+        for r in rule:
+            if isinstance(r, list):
+                s += str(self.grammar_recursive(r, recursive))
+            elif isinstance(r, RuleIndex):
+                s += "%s" % (self.grammar_recursive(self.get(True)[r], recursive) if recursive else RULE_INDEX_STR % r)
+            else:
+                s += str(r).replace("\r\n", NEWLINE_REPLACEMENT).\
+                            replace("\n", NEWLINE_REPLACEMENT).\
+                            replace("\r", "").\
+                            replace("\t", TAB_REPLACEMENT).\
+                            replace(" ", SPACE_REPLACEMENT)
+        return s
+
+    def grammar_sequence(self, join=False):
+        """ Retrieve the main sequence / rule from the sequencer """
+        x = self.get(False)[0]
+        return {SEQUENCE_KEY: self.grammar_recursive(x, False) if join else x}
+
+    def grammar_rules(self, join=False, recursive=False):
+        """ Retrieve rest of the rules from the sequencer """
+        rules = self.get(False)[1:]
+        return {(i+1): self.grammar_recursive(x, recursive) if join else x for i, x in enumerate(rules)}
+
+    def resolve(self, flatten=True):
+        """
+        When sequencer has succesfully created rules from the given input,
+        resolve method can be used to decode compressed sequence back to the original input.
+        Flatten argument can be used to keep/unkeep hierarchic structure present on a returned list.
+        """
+        def _recur(i):
+            if not isinstance(i, RuleIndex):
+                return i
+            return [_recur(x) for x in self.get()[i]]
+
+        # start from main sequence / first rule
+        items = [_recur(item) for item in self.get()[0]]
+        # should we flatten the result?
+        return flatten_list(items) if flatten else items
+
+    def get(self, cache=True):
+        if not self.grammar_cache or not cache:
+            self.grammar_cache = self.g.get_grammar()
+        return self.grammar_cache
+
+    def __str__(self):
+        """
+        String representation of the sequencer.
+        This merges only the first of the rules i.e. the main sequence
+        """
+        return ''.join([(RULE_INDEX_STR % i) if isinstance(i, RuleIndex) else str(i) for i in self.get(False)[0]])
+
+
 def flatten_list(items):
     """ List flattener helper function """
     for i, x in enumerate(items):
