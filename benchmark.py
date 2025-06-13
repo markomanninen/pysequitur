@@ -24,11 +24,6 @@ def main():
         sequitur_class = Sequencer2
     elif args.sequitur_version == 'Sequencer3':
         sequitur_class = Sequencer3
-    else:
-        # This case should ideally be caught by argparse choices, but as a fallback:
-        print(f"Error: Invalid Sequitur version '{args.sequitur_version}'. Choose from 'Sequencer', 'Sequencer2', 'Sequencer3'.")
-        return
-
     total_duration = 0.0
     print(f"Benchmarking {args.sequitur_version} with {args.input_file_path} ({NUM_RUNS} runs)...")
 
