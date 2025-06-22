@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # file: main.py
 
-from .sequiturpython.grammar import Grammar, Symbol
-from .sequiturpython.symbol import RuleIndex, RULE_INDEX_STR
+from .sequiturpython.grammar import Grammar
+from .sequiturpython.symbol import Symbol, RuleIndex, RULE_INDEX_STR
 
 # Few constants for presentation logics
 #RULE_INDEX_STR = "^%s"

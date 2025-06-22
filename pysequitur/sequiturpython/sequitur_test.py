@@ -7,7 +7,7 @@ class TestSequitur(unittest.TestCase):
         g = Grammar()
         g.train_string("Hello, world!")
         
-        self.assertEqual("0 --(0)--> H e l l o , _ w o r l d ! \n", g.print_grammar())
+        self.assertEqual("0 --(0)--> H e l l o ,   w o r l d ! \n", g.print_grammar())
 
     def test_sequitur_base(self):
         """docstring for test_sequitur_base"""
