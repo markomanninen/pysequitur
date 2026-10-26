@@ -55,6 +55,53 @@ print_grammar(Sequencer3(tokens))
 # 3 → _^1
 </code></pre>
 
+## Analysis
+
+`pysequitur.analysis` indexes the grammar of one or more documents for questions about the text: which phrases repeat, how often, where (line and column), inside which longer phrases, and what several documents have in common. Tokens are characters, words or lines, and every occurrence maps to an exact span of a document.
+
+<pre><code>
+from pysequitur.analysis import Analysis
+
+a = Analysis.from_text(open('iamsam.txt').read(), tokens='word')
+a.summary()['repeated_fraction']           # 0.9625: almost all of the text is repeated material
+a.repeats(min_chars=12, limit=3)           # 'I do not like' ×12, 'green eggs and ham' ×8, ...
+a.find('Sam-I-am')['positions'][0]         # {'document': 'text', 'line': 6, 'column': 6, 'context': 'That «Sam-I-am»...'}
+</code></pre>
+
+## MCP server for agents
+
+The MCP server lets agents use the analysis: find what repeats in a text, file or set of documents, rank the phrases, locate them, and compare documents. It needs Python 3.10 or later and the `mcp` extra:
+
+<pre><code>
+pip install -e ".[mcp]"
+pysequitur-mcp --root ~/texts
+</code></pre>
+
+The server talks over stdio and reads files only under the `--root` directories (default: the current directory). To add it to Claude Code:
+
+<pre><code>
+claude mcp add pysequitur -- pysequitur-mcp --root /path/to/texts
+</code></pre>
+
+Other clients take the usual configuration:
+
+<pre><code>
+{"mcpServers": {"pysequitur": {"command": "pysequitur-mcp", "args": ["--root", "/path/to/texts"]}}}
+</code></pre>
+
+| Tool | What it does |
+|------|--------------|
+| `analyze` | Builds the grammar of a text, a file or several documents. Returns an `analysis_id` and a summary: the share of the text inside repeats, the phrases covering the most text, the longest repeats. |
+| `list_repeats` | Ranks repeated phrases by coverage, length, occurrences or depth, filtered by length, count, contained text or document. |
+| `get_rule` | One phrase in detail: its parts, the phrases that contain it, and its positions with line, column and context. |
+| `find_phrase` | Where any phrase occurs, whether it is itself a repeat, and which repeats contain it. |
+| `shared_phrases` | The longest passages several documents have in common, and how much of each document also occurs in each other one. |
+| `repetition_profile` | How much of each stretch of a document is repeated material: boilerplate, refrains, duplicated sections. |
+| `get_grammar` | The grammar as text. |
+| `list_analyses` | The analyses the server holds. |
+
+Use word tokens for prose, line tokens for code, logs and data files (they find duplicated blocks of lines), and character tokens for text without spaces. Analysing `revelation.txt`, which has no spaces at all, by characters takes 0.1 s and finds its longest refrain, "he that hath an ear, let him hear what the Spirit saith unto the churches", as `oexwnousakousatwtitopneumalegeitaisekklhsiais`.
+
 ## Performance
 
 Building the grammar, median of 3 runs on an Apple M4 Pro with Python 3.12:
@@ -83,4 +130,4 @@ Give any number of input files and implementations (`Sequencer`, `Sequencer2`, `
 python -m unittest discover -s tests -t .
 </code></pre>
 
-The tests check the grammar properties above (exact round trip, digram uniqueness, rule utility) for every implementation on the sample files, long runs of one symbol and seeded random inputs.
+The tests check the grammar properties above (exact round trip, digram uniqueness, rule utility) for every implementation on the sample files, long runs of one symbol and seeded random inputs. The MCP server tests run when the `mcp` extra is installed, for example in a virtualenv with `pip install -e ".[mcp]"`.
