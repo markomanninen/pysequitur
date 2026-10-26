@@ -452,6 +452,8 @@ class Sequencer3():
                 self.stream(c, utilize)
 
     def stream(self, c, utilize = True):
+        # new input invalidates the grammar returned by get()
+        self.grammar_cache = None
         self.production.last().insert_after(Symbol.factory(self.g, c))
         if self.first is None:
             self.first = True

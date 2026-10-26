@@ -3,11 +3,14 @@ RULE_INDEX_STR = "^%s"
 
 class RuleIndex(int):
     """
-    Reason to use separate class for rule index values is that 
+    Reason to use separate class for rule index values is that
     they must be separated from possible numerical sequence values
     """
     def __repr__(self):
-        return RULE_INDEX_STR % self
+        return RULE_INDEX_STR % int(self)
+
+    # Python 3.8 removed int.__str__, so str() would fall back to __repr__
+    __str__ = int.__repr__
 
 class Symbol(object):
     """docstring for Symbol"""
@@ -37,23 +40,24 @@ class Symbol(object):
 
     def get_rule(self, _):
         """docstring for print_rule"""
-        return self.print_terminal()
+        return self.value()
 
     @staticmethod
     def factory(grammar, value):
         """docstring for factory"""
         from .rule import Rule
 
-        if isinstance(value, str):
-            return Terminal(grammar, value)
-        elif isinstance(value, Terminal):
+        if isinstance(value, Terminal):
             return Terminal(grammar, value.terminal)
         elif isinstance(value, NonTerminal):
             return NonTerminal(grammar, value.rule)
         elif isinstance(value, Rule):
             return NonTerminal(grammar, value)
+        elif isinstance(value, Symbol):
+            raise TypeError("cannot copy %s" % type(value).__name__)
         else:
-            raise "type(value) == %s" % type(value)
+            # any other hashable value is a terminal: characters, words, numbers...
+            return Terminal(grammar, value)
 
     @staticmethod
     def guard(grammar, value):
@@ -75,13 +79,16 @@ class Symbol(object):
             """
             
             if ((right.prev is not None) and (right.next is not None) and
-                right.value() == right.prev.value() and
-                right.value() == right.next.value()):
+                right.key() == right.prev.key() and
+                right.key() == right.next.key()):
                 self.grammar.add_index(right)
+            # the first pair of this triple starts at self.prev, as in the C++
+            # reference (*lp = left->p); indexing self pointed the table at the
+            # pair being removed, which lost symbols and could make rules cyclic
             if ((self.prev is not None) and (self.next is not None) and
-                self.value() == self.next.value() and
-                self.value() == self.prev.value()):
-                self.grammar.add_index(self)
+                self.key() == self.next.key() and
+                self.key() == self.prev.key()):
+                self.grammar.add_index(self.prev)
         self.next = right
         right.prev = self
 
@@ -159,10 +166,13 @@ class Symbol(object):
             rule = Rule(self.grammar)
             rule.last().insert_after(Symbol.factory(self.grammar, self))
             rule.last().insert_after(Symbol.factory(self.grammar, self.next))
-            self.grammar.add_index(rule.first())
-            
+
             match.substitute(rule)
             match.prev.propagate_change()
+            # index the new rule's digram only now, as the C++ reference does;
+            # indexed earlier, the triple handling in join() can overwrite it while
+            # the first occurrence is replaced, leaving duplicate digrams behind
+            self.grammar.add_index(rule.first())
             self.substitute(rule)
             self.prev.propagate_change()
         # Check for an under-used rule
@@ -180,9 +190,16 @@ class Symbol(object):
         else:
             return self.terminal
 
+    def key(self):
+        """Identity of the symbol: the terminal value, or the rule object itself"""
+        return self.rule if self.rule else self.terminal
+
     def hash_value(self):
-        """docstring for hash_value"""
-        return "%s+%s" % (self.string_value(), self.next.string_value())
+        """
+        Digram key. A tuple instead of "left+right" strings, which collided for
+        tokens containing '+' and for terminals spelled like "rule(1)".
+        """
+        return (self.key(), self.next.key())
 
 class Terminal(Symbol):
     """docstring for Terminal"""
@@ -195,6 +212,9 @@ class Terminal(Symbol):
         """docstring for value"""
         return self.terminal
     string_value = value
+
+    def key(self):
+        return self.terminal
 
     def delete(self):
         """
@@ -219,6 +239,9 @@ class NonTerminal(Symbol):
     def string_value(self):
         """docstring for string_value"""
         return "rule(%d)" % self.rule.unique_number
+
+    def key(self):
+        return self.rule
 
     def print_rule(self, rule_set, output_array, line_length):
         """docstring for print_rule"""
@@ -273,6 +296,9 @@ class Guard(Symbol):
     def string_value(self):
         """docstring for string_value"""
         return "rule(%d)" % self.rule.unique_number
+
+    def key(self):
+        return self.rule
 
     def delete(self):
         """
