@@ -6,6 +6,7 @@ import signal
 from collections import Counter
 
 from pysequitur import Sequencer, Sequencer2, Sequencer3
+from pysequitur.core import Grammar as CoreGrammar
 from pysequitur.sequiturpython.grammar import Grammar
 from pysequitur.sequiturpython.symbol import RuleIndex
 
@@ -73,7 +74,8 @@ IMPLEMENTATIONS = {
     'Sequencer': lambda tokens: _from_sequencer(Sequencer(tokens)),
     'Sequencer2': lambda tokens: _from_sequencer2(Sequencer2(tokens)),
     'Sequencer3': lambda tokens: _from_lists(Sequencer3(tokens).get()),
-    'Grammar': _build_grammar,
+    'core': lambda tokens: _from_lists(CoreGrammar(tokens).rules()),
+    'sequiturpython': _build_grammar,
 }
 
 

@@ -1,24 +1,24 @@
 # Python Sequitur (Nevill-Manning) algorithm (pysequitur)
 
+Sequitur (Nevill-Manning & Witten, 1997) reads a sequence one symbol at a time and builds a context-free grammar of its repetitions: every pair of adjacent symbols occurs only once in the grammar, and every rule is used at least twice. The rules are the repeated phrases of the input, nested into a hierarchy.
+
 For more information see: [Jupyter Notebook](https://github.com/markomanninen/pysequitur/blob/master/Python%20Sequitur%20Algorithms.ipynb) on GitHub or [Jupyter Notebook](http://nbviewer.jupyter.org/github/markomanninen/pysequitur/blob/master/Python%20Sequitur%20Algorithms.ipynb) on nbviewer.
 
-## Note
+## Implementations
 
-Three different implementations of the algorithm are provided:
+- `Sequencer3`: the linear-time algorithm of the C++ reference implementation, first ported here from the JavaScript version. Recommended.
+- `Sequencer`: keeps rules as lists of digrams. Quadratic time.
+- `Sequencer2`: array slicing. Quadratic time, and it can keep a rule that is used only once.
 
-- array slicing method
-- digram storage
-- javascript port
-
-Most robust in terms of efficiency is the last one.
+All three take any hashable tokens: characters, words, lines or numbers.
 
 ## Basic usage
 
 <pre><code>
-from pysequitur import Sequencer3 as Sequencer
+from pysequitur import Sequencer3, print_grammar
 
 input_string = open('peaseporridge.txt', 'r').read()
-s = Sequencer(input_string)
+s = Sequencer3(input_string)
 print_grammar(s)
 </code></pre>
 
@@ -40,34 +40,47 @@ S → ^1^2^3^4^3^5↵↵^6^2^7^4^7^5
 12 → in
 </code></pre>
 
+`s.get()` returns the rules as lists, with `RuleIndex` values for rule references, and `s.resolve()` expands the grammar back to the input. Tokens can be streamed in one at a time with `s.stream(token)`.
+
+Words as tokens, keeping the whitespace so that the tokens join back to the text:
+
+<pre><code>
+import re
+
+tokens = re.findall(r'\w+|\s+|[^\w\s]', 'the cat sat on the mat and the cat sat down')
+print_grammar(Sequencer3(tokens))
+# S → ^1^2on^3mat_and^3^2down
+# 1 → the_
+# 2 → cat_sat_
+# 3 → _^1
+</code></pre>
+
 ## Performance
 
-Performance benchmarks were run comparing the three Sequitur implementations available in this repository: `Sequencer`, `Sequencer2`, and `Sequencer3`. `Sequencer3` (which utilizes the `pysequitur.sequiturpython` module) was found to be significantly faster.
+Building the grammar, median of 3 runs on an Apple M4 Pro with Python 3.12:
 
-### Benchmark Results
+| Implementation | genesis1.txt (2.5 KB) | iamsam.txt (3.5 KB) | revelation.txt (46.5 KB) |
+|----------------|-----------------------|---------------------|--------------------------|
+| Sequencer3     | 0.004 s               | 0.006 s             | 0.07 s                   |
+| Sequencer      | 0.05 s                | 0.08 s              | 10.7 s                   |
+| Sequencer2     | 0.13 s                | 0.19 s              | 36.8 s                   |
 
-| Implementation | Input File     | Average Execution Time (seconds) | Notes                           |
-|----------------|----------------|---------------------------------|---------------------------------|
-| Sequencer      | genesis1.txt   | 0.1834                          | Baseline                        |
-| Sequencer2     | genesis1.txt   | 0.5065                          |                                 |
-| Sequencer3     | genesis1.txt   | 0.0731                          | Optimized/Recommended           |
-| Sequencer      | revelation.txt | 37.7859                         | Baseline                        |
-| Sequencer2     | revelation.txt | 138.9520                        |                                 |
-| Sequencer3     | revelation.txt | 1.2384                          | Optimized/Recommended           |
+`Sequencer3` runs in linear time, about 600,000 tokens per second: 1.6 MB of Python source takes 2.5 s and 4.6 MB takes 7.6 s.
 
-*(Note: Times are based on a single run due to overall execution duration with larger files.)*
+### Running benchmarks
 
-### Running Benchmarks
-
-The `benchmark.py` script can be used to test the performance of the Sequitur implementations.
-To run the script, use the following command structure:
-```bash
-python benchmark.py <input_file.txt> <SequencerVersion>
-```
-Replace `<input_file.txt>` with the path to an input text file (e.g., `genesis1.txt`, `revelation.txt`).
-Replace `<SequencerVersion>` with one of `Sequencer`, `Sequencer2`, or `Sequencer3`.
-
-Example:
-```bash
+<pre><code>
 python benchmark.py genesis1.txt Sequencer3
-```
+python benchmark.py genesis1.txt iamsam.txt revelation.txt Sequencer3 Sequencer --runs 5
+python benchmark.py iamsam.txt --tokens word --json
+</code></pre>
+
+Give any number of input files and implementations (`Sequencer`, `Sequencer2`, `Sequencer3`; default `Sequencer3`). Build is the time to stream the input in, resolve the time to extract the grammar and expand it back, and every run checks that the expansion equals the input.
+
+## Tests
+
+<pre><code>
+python -m unittest discover -s tests -t .
+</code></pre>
+
+The tests check the grammar properties above (exact round trip, digram uniqueness, rule utility) for every implementation on the sample files, long runs of one symbol and seeded random inputs.

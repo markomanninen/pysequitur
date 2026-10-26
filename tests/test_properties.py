@@ -10,8 +10,8 @@ import unittest
 
 from .support import CYCLIC_INPUT, SAMPLES, build, sample, time_limit, violations
 
-LINEAR = ('Sequencer3', 'Grammar')
-VALID = ('Sequencer', 'Sequencer3', 'Grammar')
+LINEAR = ('Sequencer3', 'sequiturpython')
+VALID = ('Sequencer', 'Sequencer3', 'sequiturpython')
 
 # Runs of one symbol exercise the overlapping-digram handling that the
 # original Python port got wrong; small alphabets produce them constantly.
@@ -101,7 +101,7 @@ class TestEdgeCases(unittest.TestCase):
             ['rule(1)', 'x', 'rule(1)', 'x', 'y', 'rule(1)', 'x'],
         ]
         for tokens in cases:
-            for impl in ('Sequencer', 'Sequencer3', 'Grammar'):
+            for impl in VALID:
                 with self.subTest(impl=impl, tokens=tokens):
                     self.assertEqual(violations(build(impl, tokens), tokens), [])
 

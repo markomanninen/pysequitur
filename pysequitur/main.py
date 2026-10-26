@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # file: main.py
 
-from .sequiturpython.grammar import Grammar, Symbol
+from .core import Grammar
 from .sequiturpython.symbol import RuleIndex, RULE_INDEX_STR
 
 # Few constants for presentation logics
@@ -438,15 +438,15 @@ class Sequencer2(list):
 
 class Sequencer3():
     """
-    Main class to use algorithm. 
-    This implements Sequitur from the JavaScript version to Python based approach for the algo:
+    Main class to use algorithm.
+    This implements the linear-time Sequitur of the reference implementation,
+    first ported here from the JavaScript version:
     https://github.com/mspandit/sequitur-python
+    The engine is core.Grammar; tokens can be any hashable values.
     """
     def __init__(self, seq = None, utilize = True):
-        self.first = None
         self.grammar_cache = None
         self.g = Grammar()
-        self.production = self.g.root_production
         if seq:
             for c in seq:
                 self.stream(c, utilize)
@@ -454,15 +454,7 @@ class Sequencer3():
     def stream(self, c, utilize = True):
         # new input invalidates the grammar returned by get()
         self.grammar_cache = None
-        self.production.last().insert_after(Symbol.factory(self.g, c))
-        if self.first is None:
-            self.first = True
-            return
-        match = self.g.get_index(self.production.last().prev)
-        if not match:
-            self.g.add_index(self.production.last().prev)
-        elif match.next != self.production.last().prev:
-            self.production.last().prev.process_match(match)
+        self.g.stream(c)
 
     def grammar_recursive(self, rule, recursive=False):
         s = ''
@@ -507,7 +499,7 @@ class Sequencer3():
 
     def get(self, cache=True):
         if not self.grammar_cache or not cache:
-            self.grammar_cache = self.g.get_grammar()
+            self.grammar_cache = self.g.rules()
         return self.grammar_cache
 
     def __str__(self):
@@ -518,10 +510,19 @@ class Sequencer3():
         return ''.join([(RULE_INDEX_STR % i) if isinstance(i, RuleIndex) else str(i) for i in self.get(False)[0]])
 
 def flatten_list(items):
-    """ List flattener helper function """
-    for i, x in enumerate(items):
-        while isinstance(items[i], list):
-            items[i:i+1] = items[i]
+    """ List flattener helper function: flattens nested lists in place and returns the list """
+    flat = []
+    # one pass with a stack of iterators; splicing sublists into items was quadratic
+    stack = [iter(items)]
+    while stack:
+        for x in stack[-1]:
+            if isinstance(x, list):
+                stack.append(iter(x))
+                break
+            flat.append(x)
+        else:
+            stack.pop()
+    items[:] = flat
     return items
 
 

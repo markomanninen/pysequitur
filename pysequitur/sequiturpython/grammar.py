@@ -1,6 +1,23 @@
 from .symbol import Symbol
 from .rule import Rule
 
+class RuleSet(list):
+    """Rules in order of first use, with constant-time membership and index lookups"""
+
+    def __init__(self, rules):
+        super(RuleSet, self).__init__(rules)
+        self.positions = dict((rule, i) for i, rule in enumerate(rules))
+
+    def __contains__(self, rule):
+        return rule in self.positions
+
+    def index(self, rule):
+        return self.positions[rule]
+
+    def append(self, rule):
+        self.positions[rule] = len(self)
+        super(RuleSet, self).append(rule)
+
 class Grammar(object):
     """docstring for Grammar"""
 
@@ -43,7 +60,7 @@ class Grammar(object):
     def print_grammar(self):
         """docstring for print_grammar"""
         output_array = []
-        rule_set = [self.root_production]
+        rule_set = RuleSet([self.root_production])
         i = 0
         for rule in rule_set:
             output_array.append("%s --(%d)--> " % (i, rule.reference_count))
@@ -57,5 +74,5 @@ class Grammar(object):
 
     def get_grammar(self):
         """docstring for get_grammar"""
-        rule_set = [self.root_production]
+        rule_set = RuleSet([self.root_production])
         return [rule.get_rule(rule_set) for rule in rule_set]
