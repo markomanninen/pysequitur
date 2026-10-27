@@ -1,0 +1,192 @@
+[
+ {
+  "implementation": "Sequencer, 2016",
+  "chars": 1000,
+  "seconds": 0.022103
+ },
+ {
+  "implementation": "Sequencer, 2016",
+  "chars": 2000,
+  "seconds": 0.080044
+ },
+ {
+  "implementation": "Sequencer, 2016",
+  "chars": 4000,
+  "seconds": 0.350545
+ },
+ {
+  "implementation": "Sequencer, 2016",
+  "chars": 8000,
+  "seconds": 1.208604
+ },
+ {
+  "implementation": "Sequencer, 2016",
+  "chars": 16000,
+  "seconds": 4.764873
+ },
+ {
+  "implementation": "Sequencer, 2016",
+  "chars": 32000,
+  "seconds": 16.599601
+ },
+ {
+  "implementation": "Sequencer, 2016",
+  "chars": 64000,
+  "seconds": 53.563524
+ },
+ {
+  "implementation": "Sequencer2, 2016",
+  "chars": 1000,
+  "seconds": 0.049201
+ },
+ {
+  "implementation": "Sequencer2, 2016",
+  "chars": 2000,
+  "seconds": 0.176813
+ },
+ {
+  "implementation": "Sequencer2, 2016",
+  "chars": 4000,
+  "seconds": 0.703477
+ },
+ {
+  "implementation": "Sequencer2, 2016",
+  "chars": 8000,
+  "seconds": 2.354069
+ },
+ {
+  "implementation": "Sequencer2, 2016",
+  "chars": 16000,
+  "seconds": 9.009552
+ },
+ {
+  "implementation": "Sequencer2, 2016",
+  "chars": 32000,
+  "seconds": 28.919194
+ },
+ {
+  "implementation": "Sequencer2, 2016",
+  "chars": 64000,
+  "seconds": 95.189626
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 1000,
+  "seconds": 0.004409
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 2000,
+  "seconds": 0.008782
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 4000,
+  "seconds": 0.018941
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 8000,
+  "seconds": 0.036596
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 16000,
+  "seconds": 0.072319
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 32000,
+  "seconds": 0.150924
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 64000,
+  "seconds": 0.292409
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 128000,
+  "seconds": 0.574716
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 256000,
+  "seconds": 1.1575
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 512000,
+  "seconds": 2.241304
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 1024000,
+  "seconds": 4.477035
+ },
+ {
+  "implementation": "port, 2016",
+  "chars": 1600000,
+  "seconds": 6.904217
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 1000,
+  "seconds": 0.001352
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 2000,
+  "seconds": 0.002692
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 4000,
+  "seconds": 0.005792
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 8000,
+  "seconds": 0.011741
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 16000,
+  "seconds": 0.02301
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 32000,
+  "seconds": 0.046287
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 64000,
+  "seconds": 0.089031
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 128000,
+  "seconds": 0.183544
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 256000,
+  "seconds": 0.35772
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 512000,
+  "seconds": 0.696704
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 1024000,
+  "seconds": 1.437462
+ },
+ {
+  "implementation": "core, 2026",
+  "chars": 1600000,
+  "seconds": 2.413122
+ }
+]

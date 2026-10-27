@@ -1,0 +1,1 @@
+{"mcpServers": {"pysequitur": {"type": "stdio", "command": "/Users/markomanninen/Documents/GitHub/pysequitur/.venv/bin/pysequitur-mcp", "args": ["--root", "/Users/markomanninen/Documents/GitHub/pysequitur/benchmarks/field_test/tasks/copied"]}}}

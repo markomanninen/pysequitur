@@ -1,0 +1,8 @@
+The files A.txt and B.txt are two documents, A and B. Use the pysequitur tools to answer; there is no other way to read the files.
+
+Some passages of document B were copied word for word from document A. Find every copied passage of at least 40 characters, and give the first five and the last five words of each. Also estimate what percentage of the characters of document B were copied from document A.
+
+End your answer with a JSON block like this one:
+```json
+{"passages": [{"first_words": "...", "last_words": "..."}], "copied_percent": 0}
+```

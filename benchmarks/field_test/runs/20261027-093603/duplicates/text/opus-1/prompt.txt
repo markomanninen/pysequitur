@@ -1,0 +1,814 @@
+Below is a Python source file from the standard library.
+
+Find the longest block of consecutive lines that appears twice, identically, in this file. Give the first and the last line number of each of its two copies.
+
+Its lines are numbered from 1.
+
+<contextlib.py>
+    1  """Utilities for with-statement contexts.  See PEP 343."""
+    2  import abc
+    3  import os
+    4  import sys
+    5  import _collections_abc
+    6  from collections import deque
+    7  from functools import wraps
+    8  from types import MethodType, GenericAlias
+    9  
+   10  __all__ = ["asynccontextmanager", "contextmanager", "closing", "nullcontext",
+   11             "AbstractContextManager", "AbstractAsyncContextManager",
+   12             "AsyncExitStack", "ContextDecorator", "ExitStack",
+   13             "redirect_stdout", "redirect_stderr", "suppress", "aclosing",
+   14             "chdir"]
+   15  
+   16  
+   17  class AbstractContextManager(abc.ABC):
+   18  
+   19      """An abstract base class for context managers."""
+   20  
+   21      __class_getitem__ = classmethod(GenericAlias)
+   22  
+   23      def __enter__(self):
+   24          """Return `self` upon entering the runtime context."""
+   25          return self
+   26  
+   27      @abc.abstractmethod
+   28      def __exit__(self, exc_type, exc_value, traceback):
+   29          """Raise any exception triggered within the runtime context."""
+   30          return None
+   31  
+   32      @classmethod
+   33      def __subclasshook__(cls, C):
+   34          if cls is AbstractContextManager:
+   35              return _collections_abc._check_methods(C, "__enter__", "__exit__")
+   36          return NotImplemented
+   37  
+   38  
+   39  class AbstractAsyncContextManager(abc.ABC):
+   40  
+   41      """An abstract base class for asynchronous context managers."""
+   42  
+   43      __class_getitem__ = classmethod(GenericAlias)
+   44  
+   45      async def __aenter__(self):
+   46          """Return `self` upon entering the runtime context."""
+   47          return self
+   48  
+   49      @abc.abstractmethod
+   50      async def __aexit__(self, exc_type, exc_value, traceback):
+   51          """Raise any exception triggered within the runtime context."""
+   52          return None
+   53  
+   54      @classmethod
+   55      def __subclasshook__(cls, C):
+   56          if cls is AbstractAsyncContextManager:
+   57              return _collections_abc._check_methods(C, "__aenter__",
+   58                                                     "__aexit__")
+   59          return NotImplemented
+   60  
+   61  
+   62  class ContextDecorator(object):
+   63      "A base class or mixin that enables context managers to work as decorators."
+   64  
+   65      def _recreate_cm(self):
+   66          """Return a recreated instance of self.
+   67  
+   68          Allows an otherwise one-shot context manager like
+   69          _GeneratorContextManager to support use as
+   70          a decorator via implicit recreation.
+   71  
+   72          This is a private interface just for _GeneratorContextManager.
+   73          See issue #11647 for details.
+   74          """
+   75          return self
+   76  
+   77      def __call__(self, func):
+   78          @wraps(func)
+   79          def inner(*args, **kwds):
+   80              with self._recreate_cm():
+   81                  return func(*args, **kwds)
+   82          return inner
+   83  
+   84  
+   85  class AsyncContextDecorator(object):
+   86      "A base class or mixin that enables async context managers to work as decorators."
+   87  
+   88      def _recreate_cm(self):
+   89          """Return a recreated instance of self.
+   90          """
+   91          return self
+   92  
+   93      def __call__(self, func):
+   94          @wraps(func)
+   95          async def inner(*args, **kwds):
+   96              async with self._recreate_cm():
+   97                  return await func(*args, **kwds)
+   98          return inner
+   99  
+  100  
+  101  class _GeneratorContextManagerBase:
+  102      """Shared functionality for @contextmanager and @asynccontextmanager."""
+  103  
+  104      def __init__(self, func, args, kwds):
+  105          self.gen = func(*args, **kwds)
+  106          self.func, self.args, self.kwds = func, args, kwds
+  107          # Issue 19330: ensure context manager instances have good docstrings
+  108          doc = getattr(func, "__doc__", None)
+  109          if doc is None:
+  110              doc = type(self).__doc__
+  111          self.__doc__ = doc
+  112          # Unfortunately, this still doesn't provide good help output when
+  113          # inspecting the created context manager instances, since pydoc
+  114          # currently bypasses the instance docstring and shows the docstring
+  115          # for the class instead.
+  116          # See http://bugs.python.org/issue19404 for more details.
+  117  
+  118      def _recreate_cm(self):
+  119          # _GCMB instances are one-shot context managers, so the
+  120          # CM must be recreated each time a decorated function is
+  121          # called
+  122          return self.__class__(self.func, self.args, self.kwds)
+  123  
+  124  
+  125  class _GeneratorContextManager(
+  126      _GeneratorContextManagerBase,
+  127      AbstractContextManager,
+  128      ContextDecorator,
+  129  ):
+  130      """Helper for @contextmanager decorator."""
+  131  
+  132      def __enter__(self):
+  133          # do not keep args and kwds alive unnecessarily
+  134          # they are only needed for recreation, which is not possible anymore
+  135          del self.args, self.kwds, self.func
+  136          try:
+  137              return next(self.gen)
+  138          except StopIteration:
+  139              raise RuntimeError("generator didn't yield") from None
+  140  
+  141      def __exit__(self, typ, value, traceback):
+  142          if typ is None:
+  143              try:
+  144                  next(self.gen)
+  145              except StopIteration:
+  146                  return False
+  147              else:
+  148                  try:
+  149                      raise RuntimeError("generator didn't stop")
+  150                  finally:
+  151                      self.gen.close()
+  152          else:
+  153              if value is None:
+  154                  # Need to force instantiation so we can reliably
+  155                  # tell if we get the same exception back
+  156                  value = typ()
+  157              try:
+  158                  self.gen.throw(value)
+  159              except StopIteration as exc:
+  160                  # Suppress StopIteration *unless* it's the same exception that
+  161                  # was passed to throw().  This prevents a StopIteration
+  162                  # raised inside the "with" statement from being suppressed.
+  163                  return exc is not value
+  164              except RuntimeError as exc:
+  165                  # Don't re-raise the passed in exception. (issue27122)
+  166                  if exc is value:
+  167                      exc.__traceback__ = traceback
+  168                      return False
+  169                  # Avoid suppressing if a StopIteration exception
+  170                  # was passed to throw() and later wrapped into a RuntimeError
+  171                  # (see PEP 479 for sync generators; async generators also
+  172                  # have this behavior). But do this only if the exception wrapped
+  173                  # by the RuntimeError is actually Stop(Async)Iteration (see
+  174                  # issue29692).
+  175                  if (
+  176                      isinstance(value, StopIteration)
+  177                      and exc.__cause__ is value
+  178                  ):
+  179                      value.__traceback__ = traceback
+  180                      return False
+  181                  raise
+  182              except BaseException as exc:
+  183                  # only re-raise if it's *not* the exception that was
+  184                  # passed to throw(), because __exit__() must not raise
+  185                  # an exception unless __exit__() itself failed.  But throw()
+  186                  # has to raise the exception to signal propagation, so this
+  187                  # fixes the impedance mismatch between the throw() protocol
+  188                  # and the __exit__() protocol.
+  189                  if exc is not value:
+  190                      raise
+  191                  exc.__traceback__ = traceback
+  192                  return False
+  193              try:
+  194                  raise RuntimeError("generator didn't stop after throw()")
+  195              finally:
+  196                  self.gen.close()
+  197  
+  198  class _AsyncGeneratorContextManager(
+  199      _GeneratorContextManagerBase,
+  200      AbstractAsyncContextManager,
+  201      AsyncContextDecorator,
+  202  ):
+  203      """Helper for @asynccontextmanager decorator."""
+  204  
+  205      async def __aenter__(self):
+  206          # do not keep args and kwds alive unnecessarily
+  207          # they are only needed for recreation, which is not possible anymore
+  208          del self.args, self.kwds, self.func
+  209          try:
+  210              return await anext(self.gen)
+  211          except StopAsyncIteration:
+  212              raise RuntimeError("generator didn't yield") from None
+  213  
+  214      async def __aexit__(self, typ, value, traceback):
+  215          if typ is None:
+  216              try:
+  217                  await anext(self.gen)
+  218              except StopAsyncIteration:
+  219                  return False
+  220              else:
+  221                  try:
+  222                      raise RuntimeError("generator didn't stop")
+  223                  finally:
+  224                      await self.gen.aclose()
+  225          else:
+  226              if value is None:
+  227                  # Need to force instantiation so we can reliably
+  228                  # tell if we get the same exception back
+  229                  value = typ()
+  230              try:
+  231                  await self.gen.athrow(value)
+  232              except StopAsyncIteration as exc:
+  233                  # Suppress StopIteration *unless* it's the same exception that
+  234                  # was passed to throw().  This prevents a StopIteration
+  235                  # raised inside the "with" statement from being suppressed.
+  236                  return exc is not value
+  237              except RuntimeError as exc:
+  238                  # Don't re-raise the passed in exception. (issue27122)
+  239                  if exc is value:
+  240                      exc.__traceback__ = traceback
+  241                      return False
+  242                  # Avoid suppressing if a Stop(Async)Iteration exception
+  243                  # was passed to athrow() and later wrapped into a RuntimeError
+  244                  # (see PEP 479 for sync generators; async generators also
+  245                  # have this behavior). But do this only if the exception wrapped
+  246                  # by the RuntimeError is actually Stop(Async)Iteration (see
+  247                  # issue29692).
+  248                  if (
+  249                      isinstance(value, (StopIteration, StopAsyncIteration))
+  250                      and exc.__cause__ is value
+  251                  ):
+  252                      value.__traceback__ = traceback
+  253                      return False
+  254                  raise
+  255              except BaseException as exc:
+  256                  # only re-raise if it's *not* the exception that was
+  257                  # passed to throw(), because __exit__() must not raise
+  258                  # an exception unless __exit__() itself failed.  But throw()
+  259                  # has to raise the exception to signal propagation, so this
+  260                  # fixes the impedance mismatch between the throw() protocol
+  261                  # and the __exit__() protocol.
+  262                  if exc is not value:
+  263                      raise
+  264                  exc.__traceback__ = traceback
+  265                  return False
+  266              try:
+  267                  raise RuntimeError("generator didn't stop after athrow()")
+  268              finally:
+  269                  await self.gen.aclose()
+  270  
+  271  
+  272  def contextmanager(func):
+  273      """@contextmanager decorator.
+  274  
+  275      Typical usage:
+  276  
+  277          @contextmanager
+  278          def some_generator(<arguments>):
+  279              <setup>
+  280              try:
+  281                  yield <value>
+  282              finally:
+  283                  <cleanup>
+  284  
+  285      This makes this:
+  286  
+  287          with some_generator(<arguments>) as <variable>:
+  288              <body>
+  289  
+  290      equivalent to this:
+  291  
+  292          <setup>
+  293          try:
+  294              <variable> = <value>
+  295              <body>
+  296          finally:
+  297              <cleanup>
+  298      """
+  299      @wraps(func)
+  300      def helper(*args, **kwds):
+  301          return _GeneratorContextManager(func, args, kwds)
+  302      return helper
+  303  
+  304  
+  305  def asynccontextmanager(func):
+  306      """@asynccontextmanager decorator.
+  307  
+  308      Typical usage:
+  309  
+  310          @asynccontextmanager
+  311          async def some_async_generator(<arguments>):
+  312              <setup>
+  313              try:
+  314                  yield <value>
+  315              finally:
+  316                  <cleanup>
+  317  
+  318      This makes this:
+  319  
+  320          async with some_async_generator(<arguments>) as <variable>:
+  321              <body>
+  322  
+  323      equivalent to this:
+  324  
+  325          <setup>
+  326          try:
+  327              <variable> = <value>
+  328              <body>
+  329          finally:
+  330              <cleanup>
+  331      """
+  332      @wraps(func)
+  333      def helper(*args, **kwds):
+  334          return _AsyncGeneratorContextManager(func, args, kwds)
+  335      return helper
+  336  
+  337  
+  338  class closing(AbstractContextManager):
+  339      """Context to automatically close something at the end of a block.
+  340  
+  341      Code like this:
+  342  
+  343          with closing(<module>.open(<arguments>)) as f:
+  344              <block>
+  345  
+  346      is equivalent to this:
+  347  
+  348          f = <module>.open(<arguments>)
+  349          try:
+  350              <block>
+  351          finally:
+  352              f.close()
+  353  
+  354      """
+  355      def __init__(self, thing):
+  356          self.thing = thing
+  357      def __enter__(self):
+  358          return self.thing
+  359      def __exit__(self, *exc_info):
+  360          self.thing.close()
+  361  
+  362  
+  363  class aclosing(AbstractAsyncContextManager):
+  364      """Async context manager for safely finalizing an asynchronously cleaned-up
+  365      resource such as an async generator, calling its ``aclose()`` method.
+  366  
+  367      Code like this:
+  368  
+  369          async with aclosing(<module>.fetch(<arguments>)) as agen:
+  370              <block>
+  371  
+  372      is equivalent to this:
+  373  
+  374          agen = <module>.fetch(<arguments>)
+  375          try:
+  376              <block>
+  377          finally:
+  378              await agen.aclose()
+  379  
+  380      """
+  381      def __init__(self, thing):
+  382          self.thing = thing
+  383      async def __aenter__(self):
+  384          return self.thing
+  385      async def __aexit__(self, *exc_info):
+  386          await self.thing.aclose()
+  387  
+  388  
+  389  class _RedirectStream(AbstractContextManager):
+  390  
+  391      _stream = None
+  392  
+  393      def __init__(self, new_target):
+  394          self._new_target = new_target
+  395          # We use a list of old targets to make this CM re-entrant
+  396          self._old_targets = []
+  397  
+  398      def __enter__(self):
+  399          self._old_targets.append(getattr(sys, self._stream))
+  400          setattr(sys, self._stream, self._new_target)
+  401          return self._new_target
+  402  
+  403      def __exit__(self, exctype, excinst, exctb):
+  404          setattr(sys, self._stream, self._old_targets.pop())
+  405  
+  406  
+  407  class redirect_stdout(_RedirectStream):
+  408      """Context manager for temporarily redirecting stdout to another file.
+  409  
+  410          # How to send help() to stderr
+  411          with redirect_stdout(sys.stderr):
+  412              help(dir)
+  413  
+  414          # How to write help() to a file
+  415          with open('help.txt', 'w') as f:
+  416              with redirect_stdout(f):
+  417                  help(pow)
+  418      """
+  419  
+  420      _stream = "stdout"
+  421  
+  422  
+  423  class redirect_stderr(_RedirectStream):
+  424      """Context manager for temporarily redirecting stderr to another file."""
+  425  
+  426      _stream = "stderr"
+  427  
+  428  
+  429  class suppress(AbstractContextManager):
+  430      """Context manager to suppress specified exceptions
+  431  
+  432      After the exception is suppressed, execution proceeds with the next
+  433      statement following the with statement.
+  434  
+  435           with suppress(FileNotFoundError):
+  436               os.remove(somefile)
+  437           # Execution still resumes here if the file was already removed
+  438      """
+  439  
+  440      def __init__(self, *exceptions):
+  441          self._exceptions = exceptions
+  442  
+  443      def __enter__(self):
+  444          pass
+  445  
+  446      def __exit__(self, exctype, excinst, exctb):
+  447          # Unlike isinstance and issubclass, CPython exception handling
+  448          # currently only looks at the concrete type hierarchy (ignoring
+  449          # the instance and subclass checking hooks). While Guido considers
+  450          # that a bug rather than a feature, it's a fairly hard one to fix
+  451          # due to various internal implementation details. suppress provides
+  452          # the simpler issubclass based semantics, rather than trying to
+  453          # exactly reproduce the limitations of the CPython interpreter.
+  454          #
+  455          # See http://bugs.python.org/issue12029 for more details
+  456          if exctype is None:
+  457              return
+  458          if issubclass(exctype, self._exceptions):
+  459              return True
+  460          if issubclass(exctype, BaseExceptionGroup):
+  461              match, rest = excinst.split(self._exceptions)
+  462              if rest is None:
+  463                  return True
+  464              raise rest
+  465          return False
+  466  
+  467  
+  468  class _BaseExitStack:
+  469      """A base class for ExitStack and AsyncExitStack."""
+  470  
+  471      @staticmethod
+  472      def _create_exit_wrapper(cm, cm_exit):
+  473          return MethodType(cm_exit, cm)
+  474  
+  475      @staticmethod
+  476      def _create_cb_wrapper(callback, /, *args, **kwds):
+  477          def _exit_wrapper(exc_type, exc, tb):
+  478              callback(*args, **kwds)
+  479          return _exit_wrapper
+  480  
+  481      def __init__(self):
+  482          self._exit_callbacks = deque()
+  483  
+  484      def pop_all(self):
+  485          """Preserve the context stack by transferring it to a new instance."""
+  486          new_stack = type(self)()
+  487          new_stack._exit_callbacks = self._exit_callbacks
+  488          self._exit_callbacks = deque()
+  489          return new_stack
+  490  
+  491      def push(self, exit):
+  492          """Registers a callback with the standard __exit__ method signature.
+  493  
+  494          Can suppress exceptions the same way __exit__ method can.
+  495          Also accepts any object with an __exit__ method (registering a call
+  496          to the method instead of the object itself).
+  497          """
+  498          # We use an unbound method rather than a bound method to follow
+  499          # the standard lookup behaviour for special methods.
+  500          _cb_type = type(exit)
+  501  
+  502          try:
+  503              exit_method = _cb_type.__exit__
+  504          except AttributeError:
+  505              # Not a context manager, so assume it's a callable.
+  506              self._push_exit_callback(exit)
+  507          else:
+  508              self._push_cm_exit(exit, exit_method)
+  509          return exit  # Allow use as a decorator.
+  510  
+  511      def enter_context(self, cm):
+  512          """Enters the supplied context manager.
+  513  
+  514          If successful, also pushes its __exit__ method as a callback and
+  515          returns the result of the __enter__ method.
+  516          """
+  517          # We look up the special methods on the type to match the with
+  518          # statement.
+  519          cls = type(cm)
+  520          try:
+  521              _enter = cls.__enter__
+  522              _exit = cls.__exit__
+  523          except AttributeError:
+  524              raise TypeError(f"'{cls.__module__}.{cls.__qualname__}' object does "
+  525                              f"not support the context manager protocol") from None
+  526          result = _enter(cm)
+  527          self._push_cm_exit(cm, _exit)
+  528          return result
+  529  
+  530      def callback(self, callback, /, *args, **kwds):
+  531          """Registers an arbitrary callback and arguments.
+  532  
+  533          Cannot suppress exceptions.
+  534          """
+  535          _exit_wrapper = self._create_cb_wrapper(callback, *args, **kwds)
+  536  
+  537          # We changed the signature, so using @wraps is not appropriate, but
+  538          # setting __wrapped__ may still help with introspection.
+  539          _exit_wrapper.__wrapped__ = callback
+  540          self._push_exit_callback(_exit_wrapper)
+  541          return callback  # Allow use as a decorator
+  542  
+  543      def _push_cm_exit(self, cm, cm_exit):
+  544          """Helper to correctly register callbacks to __exit__ methods."""
+  545          _exit_wrapper = self._create_exit_wrapper(cm, cm_exit)
+  546          self._push_exit_callback(_exit_wrapper, True)
+  547  
+  548      def _push_exit_callback(self, callback, is_sync=True):
+  549          self._exit_callbacks.append((is_sync, callback))
+  550  
+  551  
+  552  # Inspired by discussions on http://bugs.python.org/issue13585
+  553  class ExitStack(_BaseExitStack, AbstractContextManager):
+  554      """Context manager for dynamic management of a stack of exit callbacks.
+  555  
+  556      For example:
+  557          with ExitStack() as stack:
+  558              files = [stack.enter_context(open(fname)) for fname in filenames]
+  559              # All opened files will automatically be closed at the end of
+  560              # the with statement, even if attempts to open files later
+  561              # in the list raise an exception.
+  562      """
+  563  
+  564      def __enter__(self):
+  565          return self
+  566  
+  567      def __exit__(self, *exc_details):
+  568          received_exc = exc_details[0] is not None
+  569  
+  570          # We manipulate the exception state so it behaves as though
+  571          # we were actually nesting multiple with statements
+  572          frame_exc = sys.exc_info()[1]
+  573          def _fix_exception_context(new_exc, old_exc):
+  574              # Context may not be correct, so find the end of the chain
+  575              while 1:
+  576                  exc_context = new_exc.__context__
+  577                  if exc_context is None or exc_context is old_exc:
+  578                      # Context is already set correctly (see issue 20317)
+  579                      return
+  580                  if exc_context is frame_exc:
+  581                      break
+  582                  new_exc = exc_context
+  583              # Change the end of the chain to point to the exception
+  584              # we expect it to reference
+  585              new_exc.__context__ = old_exc
+  586  
+  587          # Callbacks are invoked in LIFO order to match the behaviour of
+  588          # nested context managers
+  589          suppressed_exc = False
+  590          pending_raise = False
+  591          while self._exit_callbacks:
+  592              is_sync, cb = self._exit_callbacks.pop()
+  593              assert is_sync
+  594              try:
+  595                  if cb(*exc_details):
+  596                      suppressed_exc = True
+  597                      pending_raise = False
+  598                      exc_details = (None, None, None)
+  599              except:
+  600                  new_exc_details = sys.exc_info()
+  601                  # simulate the stack of exceptions by setting the context
+  602                  _fix_exception_context(new_exc_details[1], exc_details[1])
+  603                  pending_raise = True
+  604                  exc_details = new_exc_details
+  605          if pending_raise:
+  606              try:
+  607                  # bare "raise exc_details[1]" replaces our carefully
+  608                  # set-up context
+  609                  fixed_ctx = exc_details[1].__context__
+  610                  raise exc_details[1]
+  611              except BaseException:
+  612                  exc_details[1].__context__ = fixed_ctx
+  613                  raise
+  614          return received_exc and suppressed_exc
+  615  
+  616      def close(self):
+  617          """Immediately unwind the context stack."""
+  618          self.__exit__(None, None, None)
+  619  
+  620  
+  621  # Inspired by discussions on https://bugs.python.org/issue29302
+  622  class AsyncExitStack(_BaseExitStack, AbstractAsyncContextManager):
+  623      """Async context manager for dynamic management of a stack of exit
+  624      callbacks.
+  625  
+  626      For example:
+  627          async with AsyncExitStack() as stack:
+  628              connections = [await stack.enter_async_context(get_connection())
+  629                  for i in range(5)]
+  630              # All opened connections will automatically be released at the
+  631              # end of the async with statement, even if attempts to open a
+  632              # connection later in the list raise an exception.
+  633      """
+  634  
+  635      @staticmethod
+  636      def _create_async_exit_wrapper(cm, cm_exit):
+  637          return MethodType(cm_exit, cm)
+  638  
+  639      @staticmethod
+  640      def _create_async_cb_wrapper(callback, /, *args, **kwds):
+  641          async def _exit_wrapper(exc_type, exc, tb):
+  642              await callback(*args, **kwds)
+  643          return _exit_wrapper
+  644  
+  645      async def enter_async_context(self, cm):
+  646          """Enters the supplied async context manager.
+  647  
+  648          If successful, also pushes its __aexit__ method as a callback and
+  649          returns the result of the __aenter__ method.
+  650          """
+  651          cls = type(cm)
+  652          try:
+  653              _enter = cls.__aenter__
+  654              _exit = cls.__aexit__
+  655          except AttributeError:
+  656              raise TypeError(f"'{cls.__module__}.{cls.__qualname__}' object does "
+  657                              f"not support the asynchronous context manager protocol"
+  658                             ) from None
+  659          result = await _enter(cm)
+  660          self._push_async_cm_exit(cm, _exit)
+  661          return result
+  662  
+  663      def push_async_exit(self, exit):
+  664          """Registers a coroutine function with the standard __aexit__ method
+  665          signature.
+  666  
+  667          Can suppress exceptions the same way __aexit__ method can.
+  668          Also accepts any object with an __aexit__ method (registering a call
+  669          to the method instead of the object itself).
+  670          """
+  671          _cb_type = type(exit)
+  672          try:
+  673              exit_method = _cb_type.__aexit__
+  674          except AttributeError:
+  675              # Not an async context manager, so assume it's a coroutine function
+  676              self._push_exit_callback(exit, False)
+  677          else:
+  678              self._push_async_cm_exit(exit, exit_method)
+  679          return exit  # Allow use as a decorator
+  680  
+  681      def push_async_callback(self, callback, /, *args, **kwds):
+  682          """Registers an arbitrary coroutine function and arguments.
+  683  
+  684          Cannot suppress exceptions.
+  685          """
+  686          _exit_wrapper = self._create_async_cb_wrapper(callback, *args, **kwds)
+  687  
+  688          # We changed the signature, so using @wraps is not appropriate, but
+  689          # setting __wrapped__ may still help with introspection.
+  690          _exit_wrapper.__wrapped__ = callback
+  691          self._push_exit_callback(_exit_wrapper, False)
+  692          return callback  # Allow use as a decorator
+  693  
+  694      async def aclose(self):
+  695          """Immediately unwind the context stack."""
+  696          await self.__aexit__(None, None, None)
+  697  
+  698      def _push_async_cm_exit(self, cm, cm_exit):
+  699          """Helper to correctly register coroutine function to __aexit__
+  700          method."""
+  701          _exit_wrapper = self._create_async_exit_wrapper(cm, cm_exit)
+  702          self._push_exit_callback(_exit_wrapper, False)
+  703  
+  704      async def __aenter__(self):
+  705          return self
+  706  
+  707      async def __aexit__(self, *exc_details):
+  708          received_exc = exc_details[0] is not None
+  709  
+  710          # We manipulate the exception state so it behaves as though
+  711          # we were actually nesting multiple with statements
+  712          frame_exc = sys.exc_info()[1]
+  713          def _fix_exception_context(new_exc, old_exc):
+  714              # Context may not be correct, so find the end of the chain
+  715              while 1:
+  716                  exc_context = new_exc.__context__
+  717                  if exc_context is None or exc_context is old_exc:
+  718                      # Context is already set correctly (see issue 20317)
+  719                      return
+  720                  if exc_context is frame_exc:
+  721                      break
+  722                  new_exc = exc_context
+  723              # Change the end of the chain to point to the exception
+  724              # we expect it to reference
+  725              new_exc.__context__ = old_exc
+  726  
+  727          # Callbacks are invoked in LIFO order to match the behaviour of
+  728          # nested context managers
+  729          suppressed_exc = False
+  730          pending_raise = False
+  731          while self._exit_callbacks:
+  732              is_sync, cb = self._exit_callbacks.pop()
+  733              try:
+  734                  if is_sync:
+  735                      cb_suppress = cb(*exc_details)
+  736                  else:
+  737                      cb_suppress = await cb(*exc_details)
+  738  
+  739                  if cb_suppress:
+  740                      suppressed_exc = True
+  741                      pending_raise = False
+  742                      exc_details = (None, None, None)
+  743              except:
+  744                  new_exc_details = sys.exc_info()
+  745                  # simulate the stack of exceptions by setting the context
+  746                  _fix_exception_context(new_exc_details[1], exc_details[1])
+  747                  pending_raise = True
+  748                  exc_details = new_exc_details
+  749          if pending_raise:
+  750              try:
+  751                  # bare "raise exc_details[1]" replaces our carefully
+  752                  # set-up context
+  753                  fixed_ctx = exc_details[1].__context__
+  754                  raise exc_details[1]
+  755              except BaseException:
+  756                  exc_details[1].__context__ = fixed_ctx
+  757                  raise
+  758          return received_exc and suppressed_exc
+  759  
+  760  
+  761  class nullcontext(AbstractContextManager, AbstractAsyncContextManager):
+  762      """Context manager that does no additional processing.
+  763  
+  764      Used as a stand-in for a normal context manager, when a particular
+  765      block of code is only sometimes used with a normal context manager:
+  766  
+  767      cm = optional_cm if condition else nullcontext()
+  768      with cm:
+  769          # Perform operation, using optional_cm if condition is True
+  770      """
+  771  
+  772      def __init__(self, enter_result=None):
+  773          self.enter_result = enter_result
+  774  
+  775      def __enter__(self):
+  776          return self.enter_result
+  777  
+  778      def __exit__(self, *excinfo):
+  779          pass
+  780  
+  781      async def __aenter__(self):
+  782          return self.enter_result
+  783  
+  784      async def __aexit__(self, *excinfo):
+  785          pass
+  786  
+  787  
+  788  class chdir(AbstractContextManager):
+  789      """Non thread-safe context manager to change the current working directory."""
+  790  
+  791      def __init__(self, path):
+  792          self.path = path
+  793          self._old_cwd = []
+  794  
+  795      def __enter__(self):
+  796          self._old_cwd.append(os.getcwd())
+  797          os.chdir(self.path)
+  798  
+  799      def __exit__(self, *excinfo):
+  800          os.chdir(self._old_cwd.pop())
+  801  
+</contextlib.py>
+
+End your answer with a JSON block like this one:
+```json
+{"first": [0, 0], "second": [0, 0]}
+```

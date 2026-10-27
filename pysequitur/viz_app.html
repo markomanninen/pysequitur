@@ -1,0 +1,1313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__ · Sequitur</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --accent: #2a78d6;
+  --accent-rgb: 42, 120, 214;
+  --deemph: #c3c2b7;
+  --wash: rgba(42, 120, 214, 0.10);
+  --wash-hover: rgba(42, 120, 214, 0.20);
+  --sel: rgba(42, 120, 214, 0.38);
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --accent: #3987e5;
+    --accent-rgb: 57, 135, 229;
+    --deemph: #383835;
+    --wash: rgba(57, 135, 229, 0.16);
+    --wash-hover: rgba(57, 135, 229, 0.30);
+    --sel: rgba(57, 135, 229, 0.50);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --ink: #f0efec;
+  --ink-2: #c3c2b7;
+  --muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.10);
+  --accent: #3987e5;
+  --accent-rgb: 57, 135, 229;
+  --deemph: #383835;
+  --wash: rgba(57, 135, 229, 0.16);
+  --wash-hover: rgba(57, 135, 229, 0.30);
+  --sel: rgba(57, 135, 229, 0.50);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--page); }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.5 var(--font);
+}
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px 48px; }
+header.top {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 20px 0 16px; flex-wrap: wrap;
+}
+h1 { font-size: 20px; line-height: 1.3; margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+h2 { font-size: 15px; margin: 0; font-weight: 600; }
+h3 { font-size: 13px; margin: 20px 0 8px; font-weight: 600; color: var(--ink-2); }
+.sub { margin: 2px 0 0; color: var(--ink-2); }
+.muted { color: var(--muted); }
+.actions { display: flex; gap: 8px; }
+.btn {
+  font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--axis); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+.btn.small { padding: 2px 10px; font-size: 13px; }
+.btn:focus-visible, .chip:focus-visible, tr:focus-visible, .disclose:focus-visible, .tab:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; margin-bottom: 16px; min-width: 0;
+}
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.caption { margin: 4px 0 8px; color: var(--ink-2); font-size: 13px; }
+.controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; color: var(--ink-2); font-size: 13px; }
+.controls input[type="range"] { width: 110px; vertical-align: middle; accent-color: var(--accent); }
+.controls input[type="search"], .controls input[type="number"], .input select, .input textarea {
+  font: inherit; color: var(--ink); background: var(--page); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px;
+}
+.controls input[type="number"] { width: 72px; }
+
+/* input */
+.input label { display: block; font-weight: 600; margin-bottom: 6px; }
+.input textarea { width: 100%; font-family: var(--mono); font-size: 13px; resize: vertical; }
+.input .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+.input .row label { display: flex; gap: 8px; align-items: center; margin: 0; font-weight: 400; }
+.status { margin: 10px 0 0; color: var(--ink-2); min-height: 1.5em; }
+body.busy main { opacity: 0.45; pointer-events: none; transition: opacity 0.2s; }
+
+/* stat tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.tile .label { color: var(--ink-2); font-size: 13px; }
+.tile .value { font-size: 26px; font-weight: 600; line-height: 1.25; margin-top: 2px; }
+.tile .note { color: var(--muted); font-size: 12px; }
+.tile.hero .value { font-size: 48px; line-height: 1.1; }
+
+/* document tabs */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.tab {
+  font: inherit; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+  border-radius: 999px; padding: 4px 14px;
+}
+.tab[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.tab .muted { margin-left: 6px; }
+
+/* charts */
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; overflow: visible; }
+.axis { stroke: var(--axis); stroke-width: 1; shape-rendering: crispEdges; }
+.gridline { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
+.tick-label { fill: var(--muted); font: 11px var(--font); font-variant-numeric: tabular-nums; }
+.tick-label.halo { fill: var(--ink-2); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+g.arcs path.band { fill: rgba(var(--accent-rgb), 0.10); stroke: rgba(var(--accent-rgb), 0.40); stroke-width: 1; }
+g.arcs path.line { fill: none; stroke: rgba(var(--accent-rgb), 0.55); stroke-width: 1; }
+g.arcs path.hit { fill: none; stroke: transparent; stroke-width: 8; pointer-events: stroke; cursor: pointer; }
+g.arcs path.band { pointer-events: visibleFill; cursor: pointer; }
+g.arcs path.line { pointer-events: none; }
+g.arcs.focused g.arc path.band { fill: var(--deemph); fill-opacity: 0.18; stroke: var(--deemph); stroke-opacity: 0.5; }
+g.arcs.focused g.arc path.line { stroke: var(--deemph); }
+g.arcs.focused g.arc.on path.band { fill: rgba(var(--accent-rgb), 0.45); fill-opacity: 1; stroke: var(--accent); stroke-opacity: 1; }
+g.arcs.focused g.arc.on path.line { stroke: var(--accent); stroke-width: 2; }
+.column { fill: var(--accent); pointer-events: none; }
+.column-hit { fill: transparent; }
+.column-hit:hover + .column { fill-opacity: 0.75; }
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+
+/* text and detail */
+.split { display: grid; grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); gap: 16px; align-items: start; }
+.text {
+  margin-top: 10px; max-height: 64vh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+  font-size: 14px; line-height: 1.7; padding-right: 6px;
+}
+.text.mono { font-family: var(--mono); font-size: 13px; line-height: 1.6; }
+.text .rep { background: var(--wash); border-radius: 2px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.text .rep:hover { background: var(--wash-hover); }
+.text .rep.sel { background: var(--sel); }
+::highlight(seq-sel) { background-color: var(--sel); color: var(--ink); }
+.detail { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
+.detail-head { display: flex; align-items: baseline; gap: 8px; }
+.detail-head .clear { margin-left: auto; }
+.rid { font-family: var(--mono); font-size: 12px; color: var(--ink-2); border: 1px solid var(--border); border-radius: 6px; padding: 0 6px; }
+.phrase {
+  font-family: var(--mono); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere;
+  background: var(--page); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 10px 0 0;
+  max-height: 220px; overflow: auto;
+}
+.ws { color: var(--muted); }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px 16px; margin: 14px 0 0; }
+.stats div { min-width: 0; }
+.stats dt { color: var(--ink-2); font-size: 12px; }
+.stats dd { margin: 0; font-weight: 600; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-bottom: 10px; font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: 12px var(--mono); color: var(--ink); background: var(--wash); border: 1px solid transparent;
+  border-radius: 6px; padding: 2px 8px; cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.chip:hover { border-color: var(--accent); }
+.chip .n { color: var(--ink-2); margin-left: 6px; }
+ul.tree { list-style: none; margin: 0; padding: 0 0 0 4px; }
+ul.tree ul.tree { padding-left: 18px; border-left: 1px solid var(--grid); margin: 4px 0 4px 10px; }
+ul.tree li { margin: 3px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+ul.tree li > ul.tree { flex-basis: 100%; }
+ul.tree code { font: 12px var(--mono); background: var(--page); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.disclose { font: 12px var(--font); width: 20px; height: 20px; border: 0; background: none; color: var(--ink-2); cursor: pointer; border-radius: 4px; }
+.disclose:hover { background: var(--wash); }
+ol.occ { margin: 0; padding: 0; list-style: none; }
+ol.occ li { margin: 0; }
+ol.occ button {
+  display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0;
+  border-top: 1px solid var(--grid); padding: 6px 2px; cursor: pointer;
+}
+ol.occ button:hover { background: var(--wash); }
+ol.occ .where { color: var(--ink-2); font-size: 12px; font-variant-numeric: tabular-nums; }
+ol.occ .ctx { display: block; font: 12px var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+ol.occ mark { background: var(--sel); color: var(--ink); border-radius: 2px; }
+
+/* tables */
+.table-wrap { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--ink-2); font-weight: 600; white-space: nowrap; }
+th button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+th[aria-sort] button::after { content: " ↓"; color: var(--accent); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.phrase-cell { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; min-width: 240px; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--wash); }
+tbody tr[aria-selected="true"] { background: var(--sel); }
+table.heat { width: auto; }
+.heat td { text-align: center; font-variant-numeric: tabular-nums; border: 2px solid var(--surface); border-radius: 4px; min-width: 64px; }
+.heat th { border: 0; }
+
+/* tooltip */
+.tip {
+  position: fixed; z-index: 10; pointer-events: none; max-width: 380px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14); padding: 8px 10px; font-size: 12px;
+}
+.tip-value { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.tip-value .key { display: inline-block; width: 12px; height: 2px; background: var(--accent); border-radius: 1px; }
+.tip-line { color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.tip-line.mono { font-family: var(--mono); color: var(--ink); }
+
+/* figure views, for screenshots and embedding: report.html#figure=overview */
+body[data-figure] .actions, body[data-figure] #input { display: none !important; }
+body[data-figure="overview"] main > :not(#tiles):not(#tabs):not(#arcs-card) { display: none !important; }
+body[data-figure="phrase"] main > :not(#reading) { display: none !important; }
+body[data-figure="shared"] main > :not(#shared) { display: none !important; }
+body[data-figure="table"] main > :not(#table-card) { display: none !important; }
+
+@media (max-width: 900px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .detail { position: static; max-height: none; }
+}
+@media (max-width: 600px) {
+  .wrap { padding: 0 16px 32px; }
+  .card { padding: 14px 14px; }
+  .tile.hero .value { font-size: 40px; }
+}
+</style>
+</head>
+<body data-mode="__MODE__">
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="title">Sequitur</h1>
+      <p id="subtitle" class="sub">What repeats in a text, where, and how the repeats nest.</p>
+    </div>
+    <div class="actions">
+      <button id="new" class="btn" type="button" hidden>New analysis</button>
+      <button id="theme" class="btn" type="button">Theme: auto</button>
+    </div>
+  </header>
+
+  <section id="input" class="card input" hidden>
+    <form id="form">
+      <label for="paste">Paste text</label>
+      <textarea id="paste" rows="8" placeholder="Paste text here, or choose files below. Several files are analysed together, to find what they share."></textarea>
+      <div class="row">
+        <label>Files <input id="files" type="file" multiple></label>
+        <label>Tokens
+          <select id="tokens">
+            <option value="word">Words, for prose</option>
+            <option value="line">Lines, for code and logs</option>
+            <option value="char">Characters, for text without spaces</option>
+          </select>
+        </label>
+        <label><input id="icase" type="checkbox"> Ignore case</label>
+        <button class="btn primary" type="submit">Analyse</button>
+      </div>
+      <p id="status" class="status" role="status"></p>
+    </form>
+  </section>
+
+  <main id="main" hidden>
+    <section class="tiles" id="tiles" aria-label="Summary"></section>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Documents" hidden></nav>
+
+    <section class="card" id="arcs-card">
+      <div class="card-head">
+        <h2>Repeats along the text</h2>
+        <div class="controls">
+          <label>Phrases <input id="arc-n" type="range" min="5" max="200" step="5"> <span id="arc-n-value"></span></label>
+          <label>At least <input id="arc-min" type="number" min="1" step="1"> characters</label>
+        </div>
+      </div>
+      <p class="caption">Each band joins two consecutive occurrences of a repeated phrase, and its width is the phrase's length. The phrases that cover the most text are drawn. Click one to see all of its occurrences; click it again, or anywhere else in the diagram, or press Esc to clear the selection.</p>
+      <div id="arcs" class="chart"></div>
+    </section>
+
+    <section class="card" id="profile-card">
+      <div class="card-head">
+        <h2>Share of each stretch that is repeated</h2>
+        <button id="profile-toggle" class="btn small" type="button" aria-expanded="false">Show table</button>
+      </div>
+      <div id="profile" class="chart"></div>
+      <div id="profile-table" class="table-wrap" hidden></div>
+    </section>
+
+    <div class="split" id="reading">
+      <section class="card">
+        <div class="card-head">
+          <h2>Text</h2>
+          <span id="text-note" class="muted"></span>
+        </div>
+        <div id="text" class="text" tabindex="0" aria-label="Text with repeated passages shaded"></div>
+      </section>
+      <aside id="detail" class="card detail" aria-live="polite"></aside>
+    </div>
+
+    <section class="card" id="table-card">
+      <div class="card-head">
+        <h2>Repeated phrases</h2>
+        <div class="controls">
+          <label>Containing <input id="filter" type="search" placeholder="text"></label>
+          <label>At least <input id="min-len" type="number" min="1" step="1" value="1"> characters</label>
+        </div>
+      </div>
+      <div id="table" class="table-wrap"></div>
+    </section>
+
+    <section id="shared" class="card" hidden>
+      <h2>What the documents share</h2>
+      <p class="caption" id="overlap-caption"></p>
+      <div id="overlap" class="table-wrap"></div>
+      <h3>Longest shared passages</h3>
+      <div id="shared-table" class="table-wrap"></div>
+    </section>
+  </main>
+</div>
+<div id="tip" class="tip" role="tooltip" hidden></div>
+
+<script type="application/json" id="model">__MODEL__</script>
+
+<script id="core">
+/*
+ * Pure functions over the visualizer's data, shared by the page and the tests.
+ * Offsets are UTF-16 units. A rule body holds literal strings and rule numbers;
+ * the main rule is given as pieces [document, start, end, rule] (rule 0: text
+ * outside every repeat).
+ */
+(function (scope) {
+  'use strict';
+  var KEY = 4294967296;
+
+  function prepare(M) {
+    var n = M.rules.chars.length, body = M.rules.body, root = M.root;
+    var parents = new Array(n), refs = new Int32Array(n), r, i, x, p;
+    for (r = 0; r < n; r++) parents[r] = [];
+    for (r = 1; r < n; r++) {
+      for (i = 0; i < body[r].length; i++) {
+        x = body[r][i];
+        if (typeof x === 'number') {
+          refs[x]++;
+          p = parents[x];
+          if (p[p.length - 1] !== r) p.push(r);
+        }
+      }
+    }
+    var docStart = M.docs.map(function () { return 0; }), docEnd = docStart.slice(), seen = [];
+    for (i = 0; i < root.length / 4; i++) {
+      var d = root[4 * i];
+      if (!seen[d]) { seen[d] = true; docStart[d] = i; }
+      docEnd[d] = i + 1;
+      x = root[4 * i + 3];
+      if (x) {
+        refs[x]++;
+        p = parents[x];
+        if (p[p.length - 1] !== 0) p.push(0);
+      }
+    }
+    var whole = M.docs.every(function (doc) { return doc.text.length === doc.chars; }), shown = 0;
+    M.docs.forEach(function (doc) { shown += doc.text.length; });
+    return { M: M, n: n, parents: parents, refs: refs, docStart: docStart, docEnd: docEnd, previews: new Map(),
+             texts: new Map(), lowered: [], whole: whole,
+             // finding every phrase in the text is affordable for the documents most people look at
+             allInText: whole && n * shown < 3e8 };
+  }
+
+  // the text of a rule, cut at limit characters
+  function expand(C, r, limit) {
+    var body = C.M.rules.body, out = '', stack = [r, 0];
+    if (limit === undefined) limit = Infinity;
+    while (stack.length && out.length <= limit) {
+      var i = stack.pop(), x = stack.pop(), b = body[x];
+      if (i >= b.length) continue;
+      stack.push(x, i + 1);
+      var y = b[i];
+      if (typeof y === 'string') out += y;
+      else stack.push(y, 0);
+    }
+    return out.length > limit ? out.slice(0, limit) : out;
+  }
+
+  function preview(C, r, limit) {
+    var key = r + '/' + limit, text = C.previews.get(key);
+    if (text === undefined) {
+      text = expand(C, r, limit);
+      C.previews.set(key, text);
+    }
+    return text;
+  }
+
+  // occurrences of each target rule: sorted keys document * 2^32 + start
+  function positionsOf(C, targets) {
+    var body = C.M.rules.body, chars = C.M.rules.chars, root = C.M.root;
+    var want = new Set(targets), inside = new Set(), todo = Array.from(want), out = new Map();
+    while (todo.length) {
+      var ps = C.parents[todo.pop()];
+      for (var j = 0; j < ps.length; j++) {
+        if (ps[j] && !inside.has(ps[j])) { inside.add(ps[j]); todo.push(ps[j]); }
+      }
+    }
+    want.forEach(function (t) { out.set(t, []); });
+    var stack = [];
+    for (var i = 0; i < root.length; i += 4) {
+      var r = root[i + 3];
+      if (!r || !(want.has(r) || inside.has(r))) continue;
+      var d = root[i];
+      stack.push(r, root[i + 1]);
+      while (stack.length) {
+        var s = stack.pop(), x = stack.pop();
+        if (want.has(x)) out.get(x).push(d * KEY + s);
+        if (!inside.has(x)) continue;
+        var b = body[x], off = s;
+        for (var k = 0; k < b.length; k++) {
+          var y = b[k];
+          if (typeof y === 'string') { off += y.length; continue; }
+          if (want.has(y) || inside.has(y)) stack.push(y, off);
+          off += chars[y];
+        }
+      }
+    }
+    out.forEach(function (list, t) {
+      out.set(t, Float64Array.from(list).sort());
+    });
+    return out;
+  }
+
+  function decode(key) {
+    return [Math.floor(key / KEY), key % KEY];
+  }
+
+  // index of the piece of document d that contains offset, or -1
+  function pieceAt(C, d, offset) {
+    var root = C.M.root, lo = C.docStart[d], hi = C.docEnd[d] - 1;
+    if (hi < lo) return -1;
+    while (lo < hi) {
+      var mid = (lo + hi + 1) >> 1;
+      if (root[4 * mid + 1] <= offset) lo = mid; else hi = mid - 1;
+    }
+    return root[4 * lo + 1] <= offset && offset < root[4 * lo + 2] ? lo : -1;
+  }
+
+  // the rules containing an offset, outermost first; empty outside every repeat
+  function chainAt(C, d, offset) {
+    var i = pieceAt(C, d, offset);
+    if (i < 0 || !C.M.root[4 * i + 3]) return [];
+    var body = C.M.rules.body, chars = C.M.rules.chars;
+    var r = C.M.root[4 * i + 3], start = C.M.root[4 * i + 1], chain = [r];
+    for (;;) {
+      var b = body[r], pos = start, next = 0;
+      for (var k = 0; k < b.length; k++) {
+        var y = b[k], size = typeof y === 'string' ? y.length : chars[y];
+        if (offset < pos + size) {
+          if (typeof y !== 'string') { next = y; start = pos; }
+          break;
+        }
+        pos += size;
+      }
+      if (!next) return chain;
+      chain.push(next);
+      r = next;
+    }
+  }
+
+  // share of each of `bins` equal stretches of document d inside repeats
+  function profile(C, d, bins) {
+    var total = C.M.docs[d].chars, root = C.M.root, edges = [], repeated = new Float64Array(bins), k;
+    for (k = 0; k <= bins; k++) edges.push(Math.floor(total * k / bins));
+    for (var i = C.docStart[d]; i < C.docEnd[d]; i++) {
+      if (!root[4 * i + 3]) continue;
+      var s = root[4 * i + 1], e = root[4 * i + 2];
+      k = Math.min(bins - 1, Math.floor(s * bins / Math.max(total, 1)));
+      while (k > 0 && edges[k] > s) k--;
+      while (k < bins - 1 && edges[k + 1] <= s) k++;
+      for (; k < bins && edges[k] < e; k++) repeated[k] += Math.min(e, edges[k + 1]) - Math.max(s, edges[k]);
+    }
+    var out = [];
+    for (k = 0; k < bins; k++) {
+      var width = edges[k + 1] - edges[k];
+      out.push({ start: edges[k], end: edges[k + 1], value: width ? repeated[k] / width : 0 });
+    }
+    return out;
+  }
+
+  // where a rule's phrase occurs in the text, as [document, start] pairs, without overlapping.
+  // Sequitur's parse is greedy, so a phrase can occur more often than the grammar parses it as
+  // its rule. A document not shown whole falls back to the occurrences the grammar parses.
+  function textPositions(C, r) {
+    var found = C.texts.get(r);
+    if (found) return found;
+    var phrase = expand(C, r), fold = C.M.ignoreCase, grammar = null;
+    if (fold) phrase = phrase.toLowerCase();
+    found = [];
+    C.M.docs.forEach(function (doc, d) {
+      if (doc.text.length !== doc.chars) {
+        grammar = grammar || Array.from(positionsOf(C, [r]).get(r), decode);
+        grammar.forEach(function (p) { if (p[0] === d) found.push(p); });
+        return;
+      }
+      var text = doc.text;
+      if (fold) text = C.lowered[d] || (C.lowered[d] = text.toLowerCase());
+      for (var i = text.indexOf(phrase); i >= 0 && phrase; i = text.indexOf(phrase, i + phrase.length)) found.push([d, i]);
+    });
+    C.texts.set(r, found);
+    return found;
+  }
+
+  // times a rule's phrase occurs: in the text where that is affordable, else as the grammar parses it
+  function occurrences(C, r) {
+    return C.allInText ? textPositions(C, r).length : C.M.rules.occ[r];
+  }
+
+  // the n phrases covering the most text, at least minChars long, that occur twice in
+  // document d; plus the phrase `extra` (marked so) when it is not among them
+  function arcRules(C, d, n, minChars, extra) {
+    var R = C.M.rules, candidates = [];
+    for (var r = 1; r < C.n; r++) if (R.chars[r] >= minChars) candidates.push(r);
+    candidates.sort(function (a, b) {
+      return R.chars[b] * R.occ[b] - R.chars[a] * R.occ[a] || R.chars[b] - R.chars[a] || a - b;
+    });
+    var take = candidates.slice(0, C.M.docs.length > 1 ? 3 * n : n);
+    if (extra && take.indexOf(extra) < 0) take.push(extra);
+    // all at once from the grammar when some document is not shown whole
+    var grammar = C.whole ? null : positionsOf(C, take), out = [], extraArc = null;
+    take.forEach(function (r) {
+      var starts = [];
+      if (grammar) {
+        grammar.get(r).forEach(function (key) {
+          var p = decode(key);
+          if (p[0] === d) starts.push(p[1]);
+        });
+      } else {
+        textPositions(C, r).forEach(function (p) { if (p[0] === d) starts.push(p[1]); });
+      }
+      if (starts.length < 2) return;
+      if (out.length < n) out.push({ r: r, starts: starts });
+      else if (r === extra) extraArc = { r: r, starts: starts, extra: true };
+    });
+    if (extraArc) out.push(extraArc);
+    return out;
+  }
+
+  scope.SequiturViz = {
+    prepare: prepare, expand: expand, preview: preview, positionsOf: positionsOf, decode: decode,
+    textPositions: textPositions, occurrences: occurrences, pieceAt: pieceAt, chainAt: chainAt,
+    profile: profile, arcRules: arcRules
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+
+<script>
+(function () {
+  'use strict';
+  var V = window.SequiturViz;
+  var SVG = 'http://www.w3.org/2000/svg';
+  var mode = document.body.dataset.mode;
+  var $ = function (id) { return document.getElementById(id); };
+  var M = null, C = null, arcData = [], lineCache = new Map();
+  var S = {};
+
+  // DOM helpers. Text from the data only ever goes in through textContent.
+  function el(tag, props) {
+    var e = document.createElement(tag);
+    if (props) Object.keys(props).forEach(function (k) {
+      var v = props[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === 'class') e.className = v;
+      else if (k === 'text') e.textContent = v;
+      else if (k.slice(0, 2) === 'on') e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v === true ? '' : v);
+    });
+    for (var i = 2; i < arguments.length; i++) if (arguments[i] !== null && arguments[i] !== undefined) e.append(arguments[i]);
+    return e;
+  }
+  function svg(tag, attrs) {
+    var e = document.createElementNS(SVG, tag);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    return e;
+  }
+  var numbers = new Intl.NumberFormat();
+  function fmt(n) { return numbers.format(n); }
+  function percent(x) { var p = x * 100; return (p > 0 && p < 10 ? p.toFixed(1) : Math.round(p)) + '%'; }
+  function compact(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + 'M';
+    if (n >= 1e4) return Math.round(n / 1e3) + 'K';
+    if (n >= 1e3) return (n / 1e3).toFixed(1).replace('.0', '') + 'K';
+    return String(n);
+  }
+  // one-line form of a phrase: line breaks and tabs as symbols, edge spaces as dots
+  function oneLine(text) {
+    return text.replace(/\r?\n/g, '⏎').replace(/\t/g, '⇥').replace(/^ +| +$/g, function (m) { return '·'.repeat(m.length); });
+  }
+  function nice(step) {
+    var p = Math.pow(10, Math.floor(Math.log10(Math.max(step, 1)))), f = step / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+  }
+
+  // positions of a rule as [document, start] pairs, cached
+  function positions(r) {
+    return V.textPositions(C, r);
+  }
+  function lineStarts(d) {
+    var starts = lineCache.get(d);
+    if (!starts) {
+      var text = M.docs[d].text;
+      starts = [0];
+      for (var i = text.indexOf('\n'); i >= 0; i = text.indexOf('\n', i + 1)) starts.push(i + 1);
+      lineCache.set(d, starts);
+    }
+    return starts;
+  }
+  // 1-based line and column, or null past the text that is shown
+  function lineColumn(d, offset) {
+    if (offset > M.docs[d].text.length) return null;
+    var starts = lineStarts(d), lo = 0, hi = starts.length - 1;
+    while (lo < hi) {
+      var mid = (lo + hi + 1) >> 1;
+      if (starts[mid] <= offset) lo = mid; else hi = mid - 1;
+    }
+    return [lo + 1, offset - starts[lo] + 1];
+  }
+  function where(d, offset) {
+    var lc = lineColumn(d, offset);
+    return lc ? 'line ' + fmt(lc[0]) + ', column ' + lc[1] : 'character ' + fmt(offset);
+  }
+
+  // tooltip: the value first, then what it is
+  var tip = $('tip');
+  function showTip(ev, value, lines, keyed) {
+    tip.textContent = '';
+    var head = el('div', { class: 'tip-value' });
+    if (keyed) head.append(el('span', { class: 'key' }));
+    head.append(value);
+    tip.append(head);
+    lines.forEach(function (line) {
+      tip.append(el('div', { class: 'tip-line' + (line.mono ? ' mono' : ''), text: line.text || line }));
+    });
+    tip.hidden = false;
+    moveTip(ev);
+  }
+  function moveTip(ev) {
+    if (tip.hidden) return;
+    var pad = 14, w = tip.offsetWidth, h = tip.offsetHeight, x = ev.clientX + pad, y = ev.clientY + pad;
+    if (x + w > window.innerWidth - 8) x = ev.clientX - w - pad;
+    if (y + h > window.innerHeight - 8) y = ev.clientY - h - pad;
+    tip.style.left = Math.max(8, x) + 'px';
+    tip.style.top = Math.max(8, y) + 'px';
+  }
+  function hideTip() { tip.hidden = true; }
+
+  function load(data) {
+    M = data;
+    C = V.prepare(M);
+    lineCache = new Map();
+    S = { doc: 0, sel: 0, chain: null, outside: false, hover: 0, sort: 'coverage', filter: '', minLen: 1,
+          arcN: 40, arcMin: M.tokenization === 'line' ? 30 : 12 };
+    $('arc-n').value = S.arcN;
+    $('arc-min').value = S.arcMin;
+    $('filter').value = '';
+    $('min-len').value = 1;
+    $('main').hidden = false;
+    document.title = M.title + ' · Sequitur';
+    renderHeader();
+    renderTiles();
+    renderTabs();
+    renderDocument();
+    renderTable();
+    renderShared();
+    renderDetail();
+  }
+
+  function renderDocument() {
+    renderArcs();
+    renderProfile();
+    renderText();
+    highlight();
+  }
+
+  function renderHeader() {
+    var s = M.summary, tokens = { word: 'word', line: 'line', char: 'character' }[M.tokenization];
+    $('title').textContent = M.title;
+    $('subtitle').textContent = fmt(s.tokens) + ' ' + tokens + ' tokens' +
+      (M.docs.length > 1 ? ' in ' + M.docs.length + ' documents' : '') +
+      (M.ignoreCase ? ', ignoring case' : '') + ' · ' + fmt(s.rules) + ' repeated phrases';
+  }
+
+  function renderTiles() {
+    var s = M.summary, box = $('tiles'), longest = s.longest_repeats[0];
+    box.textContent = '';
+    function tile(label, value, note, hero) {
+      box.append(el('div', { class: 'tile' + (hero ? ' hero' : '') },
+        el('div', { class: 'label', text: label }), el('div', { class: 'value', text: value }),
+        note ? el('div', { class: 'note', text: note }) : null));
+    }
+    tile('Text inside repeats', percent(s.repeated_fraction), 'of all tokens', true);
+    tile('Repeated phrases', fmt(s.rules), null);
+    tile('Longest repeat', longest ? fmt(longest.chars) : '–', longest ? 'characters, ×' + longest.occurrences : 'no repeats');
+    tile('Deepest nesting', String(s.max_depth), 'levels of phrases in phrases');
+    tile('Grammar size', percent(s.compression_ratio), 'of the input, in symbols');
+  }
+
+  function renderTabs() {
+    var box = $('tabs');
+    box.textContent = '';
+    box.hidden = M.docs.length < 2;
+    M.docs.forEach(function (doc, d) {
+      var share = M.summary.documents[d].repeated_fraction;
+      box.append(el('button', {
+        class: 'tab', role: 'tab', type: 'button', 'aria-selected': String(d === S.doc),
+        onclick: function () { showDocument(d); }
+      }, doc.name, el('span', { class: 'muted', text: percent(share) + ' repeated' })));
+    });
+  }
+
+  function showDocument(d) {
+    if (d === S.doc) return;
+    S.doc = d;
+    Array.prototype.forEach.call($('tabs').children, function (tab, i) { tab.setAttribute('aria-selected', String(i === d)); });
+    renderDocument();
+  }
+
+  // Arc diagram: one band per pair of consecutive occurrences
+  function xScale(width) {
+    var total = Math.max(1, M.docs[S.doc].chars), left = 8, plot = width - 16;
+    return function (offset) { return left + offset / total * plot; };
+  }
+
+  function axis(root, width, y, X) {
+    var total = M.docs[S.doc].chars;
+    root.append(svg('line', { class: 'axis', x1: 8, x2: width - 8, y1: y + 0.5, y2: y + 0.5 }));
+    if (!total) return;
+    var step = nice(total / Math.max(2, Math.floor(width / 140)));
+    // line numbers, unless the text has too few lines to tell the ticks apart
+    var byLine = M.docs[S.doc].lines > 2 * total / step;
+    for (var o = 0; o <= total; o += step) {
+      var x = X(o), lc = byLine ? lineColumn(S.doc, o) : null;
+      root.append(svg('line', { class: 'axis', x1: x, x2: x, y1: y, y2: y + 4 }));
+      var label = svg('text', { class: 'tick-label', x: x, y: y + 16,
+        'text-anchor': o === 0 ? 'start' : x > width - 40 ? 'end' : 'middle' });
+      label.textContent = lc ? 'line ' + fmt(lc[0]) : compact(o);
+      root.append(label);
+    }
+  }
+
+  function renderArcs() {
+    var box = $('arcs'), width = box.clientWidth || 800;
+    box.textContent = '';
+    $('arc-n-value').textContent = String(S.arcN);
+    arcData = V.arcRules(C, S.doc, S.arcN, S.arcMin, S.sel || undefined);
+    if (!arcData.length) {
+      box.append(el('p', { class: 'empty', text: 'No phrase of at least ' + S.arcMin + ' characters occurs twice in this document.' }));
+      return;
+    }
+    var X = xScale(width), chars = M.rules.chars, maxRadius = 1;
+    arcData.forEach(function (a) {
+      for (var i = 0; i + 1 < a.starts.length; i++) {
+        maxRadius = Math.max(maxRadius, (X(a.starts[i + 1] + chars[a.r]) - X(a.starts[i])) / 2);
+      }
+    });
+    // as tall as the widest arc needs, up to 234px of arcs; flatter beyond that
+    var arcHeight = Math.min(234, Math.ceil(maxRadius)), height = arcHeight + 8 + 26, base = height - 26;
+    var k = arcHeight / maxRadius;
+    var root = svg('svg', { width: width, height: height, viewBox: '0 0 ' + width + ' ' + height, role: 'img',
+      'aria-label': 'Arc diagram of ' + arcData.length + ' repeated phrases; the table of repeated phrases below lists them all' });
+    var group = svg('g', { class: 'arcs' });
+    arcData.slice().sort(function (a, b) { return chars[b.r] - chars[a.r]; }).forEach(function (a) {
+      var g = svg('g', { class: 'arc', 'data-r': a.r }), length = chars[a.r];
+      for (var i = 0; i + 1 < a.starts.length; i++) {
+        var x1 = X(a.starts[i]), x2 = X(a.starts[i] + length), x3 = X(a.starts[i + 1]), x4 = X(a.starts[i + 1] + length);
+        var outer = (x4 - x1) / 2, inner = (x3 - x2) / 2;
+        var top = 'M' + x1.toFixed(1) + ' ' + base + 'A' + outer.toFixed(1) + ' ' + (outer * k).toFixed(1) + ' 0 0 1 ' + x4.toFixed(1) + ' ' + base;
+        if (x2 - x1 >= 1 && inner > 0.5) {
+          g.append(svg('path', { class: 'band', d: top + 'L' + x3.toFixed(1) + ' ' + base + 'A' + inner.toFixed(1) + ' ' + (inner * k).toFixed(1) + ' 0 0 0 ' + x2.toFixed(1) + ' ' + base + 'Z' }));
+        } else {
+          g.append(svg('path', { class: 'line', d: top }));
+        }
+        g.append(svg('path', { class: 'hit', d: top }));
+      }
+      group.append(g);
+    });
+    root.append(group);
+    axis(root, width, base, X);
+    root.addEventListener('pointermove', function (ev) {
+      var g = ev.target.closest && ev.target.closest('g.arc');
+      if (!g) { if (S.hover) { S.hover = 0; emphasise(); } hideTip(); return; }
+      var r = +g.dataset.r;
+      if (S.hover !== r) { S.hover = r; emphasise(); }
+      showTip(ev, '×' + fmt(V.occurrences(C, r)), [{ text: oneLine(V.preview(C, r, 160)), mono: true },
+        fmt(chars[r]) + ' characters · phrase R' + r], true);
+    });
+    root.addEventListener('pointerleave', function () { S.hover = 0; emphasise(); hideTip(); });
+    root.addEventListener('click', function (ev) {
+      var g = ev.target.closest && ev.target.closest('g.arc'), r = g ? +g.dataset.r : 0;
+      select(r === S.sel ? 0 : r, null);
+    });
+    box.append(root);
+    emphasise();
+  }
+
+  function emphasise() {
+    var group = document.querySelector('#arcs g.arcs');
+    if (!group) return;
+    var focus = S.hover || S.sel;
+    group.classList.toggle('focused', !!focus && arcData.some(function (a) { return a.r === focus; }));
+    Array.prototype.forEach.call(group.children, function (g) {
+      g.classList.toggle('on', +g.dataset.r === focus);
+      if (+g.dataset.r === focus) group.append(g);
+    });
+  }
+
+  // Columns: share of each stretch of the document that is repeated
+  function renderProfile() {
+    var box = $('profile'), width = box.clientWidth || 800, height = 120, top = 10, base = height - 26, plot = base - top;
+    box.textContent = '';
+    var bins = Math.max(1, Math.min(M.docs[S.doc].chars, Math.max(8, Math.min(120, Math.floor((width - 16) / 12)))));
+    var data = V.profile(C, S.doc, bins), X = xScale(width);
+    var root = svg('svg', { width: width, height: height, viewBox: '0 0 ' + width + ' ' + height, role: 'img',
+      'aria-label': 'Columns: share of each of ' + bins + ' stretches of the document inside repeats; the table view lists the values' });
+    [0.5, 1].forEach(function (v) {
+      var y = base - v * plot;
+      root.append(svg('line', { class: 'gridline', x1: 8, x2: width - 8, y1: y + 0.5, y2: y + 0.5 }));
+    });
+    data.forEach(function (bin, i) {
+      var x0 = X(bin.start), x1 = X(bin.end), w = Math.min(24, Math.max(1, x1 - x0 - 2)), x = (x0 + x1 - w) / 2;
+      var h = bin.value * plot, r = Math.min(4, w / 2, h);
+      var hit = svg('rect', { class: 'column-hit', x: x0, y: top, width: Math.max(1, x1 - x0), height: plot, 'data-i': i });
+      root.append(hit);
+      if (h > 0) {
+        root.append(svg('path', { class: 'column', d: 'M' + x + ' ' + base + 'V' + (base - h + r) + 'Q' + x + ' ' + (base - h) + ' ' + (x + r) + ' ' + (base - h) +
+          'H' + (x + w - r) + 'Q' + (x + w) + ' ' + (base - h) + ' ' + (x + w) + ' ' + (base - h + r) + 'V' + base + 'Z' }));
+      } else {
+        root.append(svg('g'));
+      }
+    });
+    // gridline labels last, with a halo, so the columns never hide them
+    [0.5, 1].forEach(function (v) {
+      var label = svg('text', { class: 'tick-label halo', x: 12, y: base - v * plot + 4 });
+      label.textContent = percent(v);
+      root.append(label);
+    });
+    axis(root, width, base, X);
+    root.addEventListener('pointermove', function (ev) {
+      var i = ev.target.dataset ? ev.target.dataset.i : undefined;
+      if (i === undefined) { hideTip(); return; }
+      var bin = data[+i];
+      showTip(ev, percent(bin.value) + ' repeated', ['characters ' + fmt(bin.start) + '–' + fmt(bin.end), 'from ' + where(S.doc, bin.start)], true);
+    });
+    root.addEventListener('pointerleave', hideTip);
+    box.append(root);
+    renderProfileTable(data);
+  }
+
+  function renderProfileTable(data) {
+    var box = $('profile-table');
+    box.textContent = '';
+    var body = el('tbody');
+    data.forEach(function (bin) {
+      body.append(el('tr', null, el('td', { text: where(S.doc, bin.start) }),
+        el('td', { class: 'num', text: fmt(bin.start) + '–' + fmt(bin.end) }), el('td', { class: 'num', text: percent(bin.value) })));
+    });
+    box.append(el('table', null, el('thead', null, el('tr', null, el('th', { text: 'From' }),
+      el('th', { class: 'num', text: 'Characters' }), el('th', { class: 'num', text: 'Repeated' }))), body));
+  }
+
+  // The text, with the passages of the main rule that are repeats shaded
+  function renderText() {
+    var d = S.doc, doc = M.docs[d], box = $('text'), root = M.root, shown = doc.text.length;
+    box.textContent = '';
+    box.classList.toggle('mono', M.tokenization !== 'word');
+    var fragment = document.createDocumentFragment();
+    for (var i = C.docStart[d]; i < C.docEnd[d]; i++) {
+      var start = root[4 * i + 1];
+      if (start >= shown) break;
+      var span = document.createElement('span'), r = root[4 * i + 3];
+      span.textContent = doc.text.slice(start, Math.min(root[4 * i + 2], shown));
+      span.dataset.i = i;
+      if (r) { span.className = 'rep'; span.dataset.r = r; }
+      fragment.append(span);
+    }
+    box.append(fragment);
+    $('text-note').textContent = shown < doc.chars ? 'the first ' + fmt(shown) + ' of ' + fmt(doc.chars) + ' characters' : doc.name;
+  }
+
+  function spanOf(i) {
+    return $('text').querySelector('span[data-i="' + i + '"]');
+  }
+
+  function highlight() {
+    var box = $('text');
+    Array.prototype.forEach.call(box.querySelectorAll('.rep.sel'), function (s) { s.classList.remove('sel'); });
+    var supported = window.CSS && CSS.highlights && window.Highlight;
+    if (supported) CSS.highlights.delete('seq-sel');
+    if (!S.sel) return;
+    var ranges = [], length = M.rules.chars[S.sel], shown = M.docs[S.doc].text.length;
+    positions(S.sel).forEach(function (p) {
+      if (p[0] !== S.doc || p[1] >= shown) return;
+      var i = V.pieceAt(C, S.doc, p[1]), span = i < 0 ? null : spanOf(i);
+      if (!span) return;
+      if (!supported) {
+        if (+span.dataset.r === S.sel) span.classList.add('sel');
+        return;
+      }
+      // an occurrence found in the text can run over several passages of the main rule
+      var end = Math.min(p[1] + length, shown), j = V.pieceAt(C, S.doc, end - 1), last = j < 0 ? null : spanOf(j);
+      if (!last) return;
+      var range = document.createRange();
+      range.setStart(span.firstChild, p[1] - M.root[4 * i + 1]);
+      range.setEnd(last.firstChild, end - M.root[4 * j + 1]);
+      ranges.push(range);
+    });
+    if (supported && ranges.length) CSS.highlights.set('seq-sel', new Highlight(...ranges));
+  }
+
+  function offsetAtPoint(x, y) {
+    var node, offset, caret;
+    if (document.caretPositionFromPoint) {
+      caret = document.caretPositionFromPoint(x, y);
+      if (!caret) return null;
+      node = caret.offsetNode; offset = caret.offset;
+    } else if (document.caretRangeFromPoint) {
+      caret = document.caretRangeFromPoint(x, y);
+      if (!caret) return null;
+      node = caret.startContainer; offset = caret.startOffset;
+    } else {
+      return null;
+    }
+    var span = node.nodeType === 3 ? node.parentElement : node;
+    if (!span || !span.dataset || span.dataset.i === undefined) return null;
+    var start = M.root[4 * +span.dataset.i + 1];
+    return node.nodeType === 3 ? start + Math.min(offset, node.length - 1) : start;
+  }
+
+  function goTo(d, offset) {
+    showDocument(d);
+    var i = V.pieceAt(C, d, offset), span = i < 0 ? null : spanOf(i), box = $('text');
+    if (!span) return;
+    var range = document.createRange(), node = span.firstChild, a = offset - M.root[4 * i + 1];
+    range.setStart(node, Math.min(a, node.length));
+    range.setEnd(node, Math.min(a + 1, node.length));
+    var rect = range.getBoundingClientRect(), frame = box.getBoundingClientRect();
+    box.scrollTop += rect.top - frame.top - box.clientHeight / 3;
+    if (frame.top < 0 || frame.bottom > window.innerHeight) box.scrollIntoView({ block: 'nearest' });
+  }
+
+  function select(r, chain) {
+    S.sel = r;
+    S.chain = chain;
+    S.outside = false;
+    var hash = new URLSearchParams(location.hash.slice(1));
+    if (r) hash.set('rule', r); else hash.delete('rule');
+    var link = hash.toString();
+    history.replaceState(null, '', link ? '#' + link : location.pathname + location.search);
+    // redraw when the selection needs its own bands, or drops the bands of the previous one
+    var drawn = arcData.some(function (a) { return a.r === r && !a.extra; });
+    if (arcData.some(function (a) { return a.extra; }) || (r && !drawn)) renderArcs(); else emphasise();
+    highlight();
+    renderDetail();
+    markTableSelection();
+  }
+
+  // Detail panel
+  function ruleChip(r) {
+    return el('button', { class: 'chip', type: 'button', title: 'Phrase R' + r, onclick: function () { select(r, null); } },
+      oneLine(V.preview(C, r, 40)), el('span', { class: 'n', text: '×' + fmt(V.occurrences(C, r)) }));
+  }
+
+  function phraseBlock(text, cut) {
+    var pre = el('pre', { class: 'phrase' });
+    text.split(/(\n|\t)/).forEach(function (part) {
+      if (part === '\n') pre.append(el('span', { class: 'ws', text: '⏎' }), '\n');
+      else if (part === '\t') pre.append(el('span', { class: 'ws', text: '⇥' }), '\t');
+      else if (part) pre.append(part);
+    });
+    if (cut) pre.append(el('span', { class: 'ws', text: ' …' }));
+    return pre;
+  }
+
+  function tree(r) {
+    var list = el('ul', { class: 'tree' });
+    M.rules.body[r].forEach(function (y) {
+      if (typeof y === 'string') {
+        list.append(el('li', null, el('code', { text: oneLine(y) })));
+        return;
+      }
+      var item = el('li'), toggle = el('button', { class: 'disclose', type: 'button', 'aria-expanded': 'false',
+        'aria-label': 'Show the parts of phrase R' + y, text: '▸' });
+      toggle.addEventListener('click', function () {
+        var open = toggle.getAttribute('aria-expanded') === 'true', child = item.querySelector(':scope > ul');
+        if (child) child.remove();
+        if (!open) item.append(tree(y));
+        toggle.setAttribute('aria-expanded', String(!open));
+        toggle.textContent = open ? '▸' : '▾';
+      });
+      item.append(toggle, ruleChip(y));
+      list.append(item);
+    });
+    return list;
+  }
+
+  function renderDetail() {
+    var box = $('detail'), r = S.sel, R = M.rules;
+    box.textContent = '';
+    if (!r) {
+      box.append(el('h2', { text: 'Phrase' }), el('p', { class: 'muted', text: S.outside
+        ? 'This text occurs only once: it is not part of any repeat.'
+        : 'Select a repeated phrase: click shaded text, a band of the arc diagram, or a row of the table.' }));
+      return;
+    }
+    if (S.chain && S.chain.length > 1) {
+      var crumbs = el('nav', { class: 'crumbs', 'aria-label': 'Phrases containing this one' }, el('span', { class: 'muted', text: 'Inside' }));
+      S.chain.slice(0, -1).forEach(function (x, i) {
+        if (i) crumbs.append(el('span', { class: 'muted', text: '›' }));
+        crumbs.append(ruleChip(x));
+      });
+      box.append(crumbs);
+    }
+    box.append(el('div', { class: 'detail-head' }, el('h2', { text: 'Repeated phrase' }), el('span', { class: 'rid', text: 'R' + r }),
+      el('button', { class: 'btn small clear', type: 'button', title: 'Clear the selection (Esc)', text: 'Clear',
+                     onclick: function () { select(0, null); } })));
+    box.append(phraseBlock(V.expand(C, r, 4000), R.chars[r] > 4000));
+    var stats = el('dl', { class: 'stats' });
+    var occurs = positions(r).length;
+    [['Occurrences', fmt(occurs)]].concat(occurs !== R.occ[r] ? [['Parsed as this phrase', fmt(R.occ[r])]] : [],
+     [['Length', fmt(R.chars[r]) + ' characters'], ['Tokens', fmt(R.tokens[r])],
+     ['Nesting depth', String(R.depth[r])], ['Uses in the grammar', fmt(C.refs[r])]]).forEach(function (s) {
+      stats.append(el('div', null, el('dt', { text: s[0] }), el('dd', { text: s[1] })));
+    });
+    box.append(stats);
+    if (R.docs) {
+      var counts = R.docs[r], perDoc = el('div', { class: 'chips' });
+      for (var i = 0; i < counts.length; i += 2) perDoc.append(el('span', { class: 'rid', text: M.docs[counts[i]].name + ' ×' + counts[i + 1] }));
+      box.append(el('h3', { text: 'In documents' }), perDoc);
+    }
+    box.append(el('h3', { text: 'Made of' }), tree(r));
+    var parents = C.parents[r].filter(function (p) { return p; });
+    if (parents.length) {
+      var chips = el('div', { class: 'chips' });
+      parents.slice(0, 16).forEach(function (p) { chips.append(ruleChip(p)); });
+      box.append(el('h3', { text: 'Inside longer repeats' }), chips);
+    }
+    var list = el('ol', { class: 'occ' }), all = positions(r);
+    all.slice(0, 60).forEach(function (p) {
+      var text = M.docs[p[0]].text, s = p[1], e = s + R.chars[r];
+      var context = el('span', { class: 'ctx' });
+      if (s < text.length) {
+        context.append((s > 40 ? '…' : '') + oneLine(text.slice(Math.max(0, s - 40), s)),
+          el('mark', { text: oneLine(text.slice(s, Math.min(e, s + 80))) + (e > s + 80 ? '…' : '') }),
+          oneLine(text.slice(e, e + 40)) + (e + 40 < text.length ? '…' : ''));
+      }
+      list.append(el('li', null, el('button', { type: 'button', onclick: function () { goTo(p[0], s); } },
+        el('span', { class: 'where', text: (M.docs.length > 1 ? M.docs[p[0]].name + ', ' : '') + where(p[0], s) }), context)));
+    });
+    box.append(el('h3', { text: 'Where it occurs' }), list);
+    if (all.length > 60) box.append(el('p', { class: 'muted', text: 'and ' + fmt(all.length - 60) + ' more' }));
+  }
+
+  // Table of repeated phrases: the table view of the arc diagram
+  var COLUMNS = [
+    ['phrase', 'Phrase'], ['occurrences', 'Occurrences'], ['length', 'Length'], ['coverage', 'Coverage'], ['depth', 'Depth']
+  ];
+  function renderTable() {
+    var box = $('table'), R = M.rules, filter = S.filter.toLowerCase(), rows = [];
+    box.textContent = '';
+    for (var r = 1; r < C.n; r++) {
+      if (R.chars[r] < S.minLen) continue;
+      if (filter && V.preview(C, r, 1000).toLowerCase().indexOf(filter) < 0) continue;
+      rows.push(r);
+    }
+    var key = {
+      coverage: function (r) { return R.chars[r] * V.occurrences(C, r); }, length: function (r) { return R.chars[r]; },
+      occurrences: function (r) { return V.occurrences(C, r); }, depth: function (r) { return R.depth[r]; }
+    }[S.sort];
+    rows.sort(function (a, b) { return key(b) - key(a) || R.chars[b] - R.chars[a] || a - b; });
+    var head = el('tr');
+    COLUMNS.forEach(function (c) {
+      var sortable = c[0] !== 'phrase';
+      head.append(el('th', { scope: 'col', class: sortable ? 'num' : null, 'aria-sort': S.sort === c[0] ? 'descending' : null },
+        sortable ? el('button', { type: 'button', text: c[1], onclick: function () { S.sort = c[0]; renderTable(); } }) : c[1]));
+    });
+    var body = el('tbody');
+    rows.slice(0, 200).forEach(function (r) {
+      var row = el('tr', { tabindex: '0', 'data-r': r, 'aria-selected': String(r === S.sel) },
+        el('td', { class: 'phrase-cell', text: oneLine(V.preview(C, r, 120)) + (R.chars[r] > 120 ? '…' : '') }),
+        el('td', { class: 'num', text: fmt(V.occurrences(C, r)) }), el('td', { class: 'num', text: fmt(R.chars[r]) }),
+        el('td', { class: 'num', text: fmt(R.chars[r] * V.occurrences(C, r)) }), el('td', { class: 'num', text: String(R.depth[r]) }));
+      body.append(row);
+    });
+    body.addEventListener('click', function (ev) {
+      var row = ev.target.closest('tr');
+      if (row) select(+row.dataset.r, null);
+    });
+    body.addEventListener('keydown', function (ev) {
+      var row = ev.target.closest('tr');
+      if (row && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); select(+row.dataset.r, null); }
+    });
+    box.append(el('table', { class: 'rules' }, el('thead', null, head), body),
+      el('p', { class: 'muted', text: rows.length > 200 ? 'The first 200 of ' + fmt(rows.length) + ' phrases.' : fmt(rows.length) + ' phrases.' }));
+  }
+
+  function markTableSelection() {
+    Array.prototype.forEach.call($('table').querySelectorAll('tbody tr'), function (row) {
+      row.setAttribute('aria-selected', String(+row.dataset.r === S.sel));
+    });
+  }
+
+  // Several documents: overlap heatmap and shared passages
+  var RAMP = ['#cde2fb', '#b7d3f6', '#9ec5f4', '#86b6ef', '#6da7ec', '#5598e7', '#3987e5', '#2a78d6', '#256abf', '#1c5cab', '#184f95', '#104281', '#0d366b'];
+  function dark() {
+    var theme = document.documentElement.dataset.theme;
+    return theme ? theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function rampColor(v) {
+    var steps = dark() ? RAMP.slice().reverse() : RAMP;
+    return steps[Math.min(steps.length - 1, Math.round(v * (steps.length - 1)))];
+  }
+  // white or near-black, whichever contrasts more with the cell
+  function inkOn(hex) {
+    var n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(function (v) {
+      v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    var l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    return (1.05 / (l + 0.05)) >= ((l + 0.05) / (0.0035 + 0.05)) ? '#ffffff' : '#0b0b0b';
+  }
+
+  function renderShared() {
+    var section = $('shared');
+    section.hidden = !M.shared;
+    if (!M.shared) return;
+    var names = M.docs.map(function (d) { return d.name; }), value = {};
+    $('overlap-caption').textContent = M.shared.compared
+      ? 'Each cell is the share of the row\'s document that also appears word for word in the column\'s document, in passages of at least ' + M.shared.min_chars + ' characters.'
+      : 'The documents are too large to compare word for word here; the shared passages below come from the grammar.';
+    $('overlap').hidden = !M.shared.compared;
+    M.shared.overlaps.forEach(function (o) { value[o.document + '\u0000' + o.other] = o.shared_fraction; });
+    var head = el('tr', null, el('th', { scope: 'col', text: 'Share of ↓ also in →' }));
+    names.forEach(function (n) { head.append(el('th', { scope: 'col', text: n })); });
+    var body = el('tbody');
+    names.forEach(function (row) {
+      var tr = el('tr', null, el('th', { scope: 'row', text: row }));
+      names.forEach(function (col) {
+        if (row === col) { tr.append(el('td', { class: 'muted', text: '–' })); return; }
+        var v = value[row + '\u0000' + col] || 0, color = rampColor(v);
+        var cell = el('td', { text: percent(v) });
+        cell.style.background = color;
+        cell.style.color = inkOn(color);
+        tr.append(cell);
+      });
+      body.append(tr);
+    });
+    var overlap = $('overlap');
+    overlap.textContent = '';
+    overlap.append(el('table', { class: 'heat' }, el('thead', null, head), body));
+
+    var rows = el('tbody');
+    M.shared.passages.forEach(function (p) {
+      var d = names.indexOf(p.document), offset = p.offset;
+      rows.append(el('tr', { tabindex: '0', 'data-d': d, 'data-offset': offset },
+        el('td', { class: 'phrase-cell', text: oneLine(p.text) }), el('td', { class: 'num', text: fmt(p.chars) }),
+        el('td', { text: p.document + ', line ' + fmt(p.line) }), el('td', { text: p.also_in.join(', ') })));
+    });
+    rows.addEventListener('click', function (ev) {
+      var row = ev.target.closest('tr');
+      if (row) goTo(+row.dataset.d, +row.dataset.offset);
+    });
+    var table = $('shared-table');
+    table.textContent = '';
+    table.append(el('table', null, el('thead', null, el('tr', null, el('th', { text: 'Passage' }),
+      el('th', { class: 'num', text: 'Length' }), el('th', { text: 'In' }), el('th', { text: 'Also in' }))), rows));
+  }
+
+  // Controls
+  $('text').addEventListener('click', function (ev) {
+    var offset = offsetAtPoint(ev.clientX, ev.clientY);
+    if (offset === null) return;
+    var chain = V.chainAt(C, S.doc, offset);
+    if (chain.length) {
+      select(chain[chain.length - 1], chain);
+    } else {
+      select(0, null);
+      S.outside = true;
+      renderDetail();
+    }
+  });
+  $('text').addEventListener('pointermove', function (ev) {
+    var span = ev.target.closest && ev.target.closest('.rep');
+    if (!span) { hideTip(); return; }
+    var r = +span.dataset.r;
+    showTip(ev, '×' + fmt(V.occurrences(C, r)), [{ text: oneLine(V.preview(C, r, 120)), mono: true }, 'click to inspect the innermost phrase here'], true);
+  });
+  $('text').addEventListener('pointerleave', hideTip);
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && M && S.sel && !ev.target.closest('input, textarea, select')) select(0, null);
+  });
+  $('arc-n').addEventListener('input', function () { S.arcN = +this.value; renderArcs(); });
+  $('arc-min').addEventListener('change', function () { S.arcMin = Math.max(1, +this.value || 1); renderArcs(); });
+  $('filter').addEventListener('input', function () { S.filter = this.value; renderTable(); });
+  $('min-len').addEventListener('change', function () { S.minLen = Math.max(1, +this.value || 1); renderTable(); });
+  $('profile-toggle').addEventListener('click', function () {
+    var table = $('profile-table'), open = table.hidden;
+    table.hidden = !open;
+    this.setAttribute('aria-expanded', String(open));
+    this.textContent = open ? 'Hide table' : 'Show table';
+  });
+  var resizeTimer = 0, lastWidth = window.innerWidth;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      if (!M || window.innerWidth === lastWidth) return;
+      lastWidth = window.innerWidth;
+      renderArcs();
+      renderProfile();
+    }, 150);
+  });
+
+  // Theme: auto follows the system; light and dark are kept for the next visit
+  var THEMES = ['auto', 'light', 'dark'];
+  function applyTheme(theme) {
+    if (theme === 'auto') delete document.documentElement.dataset.theme;
+    else document.documentElement.dataset.theme = theme;
+    $('theme').textContent = 'Theme: ' + theme;
+    $('theme').dataset.theme = theme;
+    if (M) renderShared();
+  }
+  $('theme').addEventListener('click', function () {
+    var next = THEMES[(THEMES.indexOf(this.dataset.theme || 'auto') + 1) % THEMES.length];
+    applyTheme(next);
+    try { localStorage.setItem('sequitur-theme', next); } catch (e) { /* storage unavailable */ }
+  });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { if (M) renderShared(); });
+  var saved = 'auto';
+  try { saved = localStorage.getItem('sequitur-theme') || 'auto'; } catch (e) { /* storage unavailable */ }
+  applyTheme(THEMES.indexOf(saved) >= 0 ? saved : 'auto');
+
+  // The app analyses pasted or opened text through its local server
+  function status(text) { $('status').textContent = text; }
+  if (mode === 'app') {
+    $('new').hidden = false;
+    $('new').addEventListener('click', function () { $('input').hidden = !$('input').hidden; });
+    $('form').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var files = Array.from($('files').files), paste = $('paste').value;
+      Promise.all(files.map(function (f) { return f.text().then(function (text) { return { name: f.name, text: text }; }); }))
+        .then(function (documents) {
+          if (paste.trim()) documents.push({ name: files.length ? 'pasted text' : 'text', text: paste });
+          if (!documents.length) { status('Paste a text or choose files first.'); return null; }
+          status('Analysing…');
+          document.body.classList.add('busy');
+          return fetch('api/analyze', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ documents: documents, tokens: $('tokens').value, ignore_case: $('icase').checked })
+          }).then(function (response) {
+            return response.json().then(function (data) {
+              if (!response.ok) throw new Error(data.error || response.statusText);
+              return data;
+            });
+          }).then(function (data) {
+            load(data);
+            status('');
+            $('input').hidden = true;
+          });
+        })
+        .catch(function (e) { status('Could not analyse: ' + e.message); })
+        .finally(function () { document.body.classList.remove('busy'); });
+    });
+  }
+
+  // A link such as report.html#doc=1&rule=12 opens on that document and phrase. For
+  // screenshots and embedding, theme=light|dark sets the theme, and figure=overview|phrase|
+  // shared|table shows only that part of the page.
+  function follow() {
+    var hash = new URLSearchParams(location.hash.slice(1)), d = +hash.get('doc'), r = +hash.get('rule');
+    var theme = hash.get('theme'), figure = hash.get('figure');
+    if (theme === 'light' || theme === 'dark') applyTheme(theme);
+    if (figure) document.body.dataset.figure = figure;
+    else delete document.body.dataset.figure;
+    if (!M) return;
+    if (d > 0 && d < M.docs.length) showDocument(d);
+    if (r > 0 && r < C.n) {
+      select(r, null);
+      var first = positions(r).filter(function (p) { return p[0] === S.doc; })[0];
+      if (first) goTo(first[0], first[1]);
+    }
+  }
+  window.addEventListener('hashchange', follow);
+
+  var data = JSON.parse($('model').textContent);
+  if (data) {
+    load(data);
+    follow();
+  } else if (mode === 'app') $('input').hidden = false;
+  else $('main').hidden = true;
+})();
+</script>
+</body>
+</html>

@@ -60,3 +60,9 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# Virtual environments
+.venv/
+
+# Other implementations fetched by benchmarks/other/fetch.sh
+benchmarks/other/vendor/
