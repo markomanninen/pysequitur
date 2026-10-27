@@ -14,6 +14,26 @@ For more information see: [Jupyter Notebook](https://github.com/markomanninen/py
 
 All three take any hashable tokens: characters, words, lines or numbers.
 
+### Optional compiled engine
+
+`rust/` holds `Sequencer3`'s engine ported to Rust, as the Python module `pysequitur_rs`. When it is installed, `Sequencer3` uses it and builds the same grammar: the same rules, numbered the same, with `RuleIndex` references. pysequitur itself needs no Rust and installs as before. Building the module needs a Rust toolchain:
+
+<pre><code>
+pip install ./rust                       # from a checkout; or, in a virtualenv: cd rust && maturin develop --release
+</code></pre>
+
+`PYSEQUITUR_BACKEND=python` makes every `Sequencer3` use the Python engine, `rust` requires the compiled one, and `auto`, the default, uses it when it can be imported. `Sequencer3(tokens, backend='python')` chooses for one sequencer. The compiled engine takes `int` and `str` tokens; given anything else, such as a float, a tuple, `True` or an int beyond 64 bits, the sequencer carries on in Python with the same result.
+
+Time to build the grammar and get it with `get()`, measured from Python on an Apple M4 Pro:
+
+| Input | Python | Rust | |
+|-------|-------:|-----:|---:|
+| 2,400 ints, a few hundred distinct | 3.1 ms | 0.16 ms | 19× |
+| revelation.txt (46.5 KB) | 62 ms | 3.3 ms | 19× |
+| 1.6 MB of Python source | 2.47 s | 0.14 s | 18× |
+
+About a third of the time on short inputs goes to making the rules into Python lists. `pysequitur.backend.grammar_size(tokens)` counts the grammar's symbols, `sum(len(r) for r in Sequencer3(tokens).get())`, without making them: 0.11 ms for the 2,400 ints.
+
 ## Basic usage
 
 <pre><code>
@@ -138,7 +158,7 @@ Building the grammar, median of 3 runs on an Apple M4 Pro with Python 3.12:
 | Sequencer      | 0.11 s                | 0.18 s              | 38.4 s                   |
 | Sequencer2     | 0.22 s                | 0.32 s              | 67.6 s                   |
 
-`Sequencer3` runs in linear time, about 600,000 tokens per second: 1.6 MB of Python source takes 2.5 s and 4.6 MB takes 7.6 s. `Sequencer` and `Sequencer2` compare symbols all the time, and a rule reference now compares itself in Python code so that the rule 2 is never mistaken for the number 2; that makes them about twice as slow as before.
+These are the Python engines; the compiled one is above. `Sequencer3` runs in linear time, about 600,000 tokens per second: 1.6 MB of Python source takes 2.5 s and 4.6 MB takes 7.6 s. `Sequencer` and `Sequencer2` compare symbols all the time, and a rule reference now compares itself in Python code so that the rule 2 is never mistaken for the number 2; that makes them about twice as slow as before.
 
 [doc/performance.md](doc/performance.md) has charts of build time against input length, a comparison with ten other implementations in five languages, the correctness checks and the history of the library's performance. [doc/background.md](doc/background.md) collects the research on Sequitur and its uses, and [doc/substack/](doc/substack/) has the [article](https://markotmanninen.substack.com/p/giving-ai-agents-an-eye-for-repetition) with the scripts behind its images.
 
@@ -150,7 +170,7 @@ python benchmark.py samples/genesis1.txt samples/iamsam.txt samples/revelation.t
 python benchmark.py samples/iamsam.txt --tokens word --json
 </code></pre>
 
-Give any number of input files and implementations (`Sequencer`, `Sequencer2`, `Sequencer3`; default `Sequencer3`). Build is the time to stream the input in, resolve the time to extract the grammar and expand it back, and every run checks that the expansion equals the input.
+Give any number of input files and implementations (`Sequencer`, `Sequencer2`, `Sequencer3`; default `Sequencer3`, on the engine `PYSEQUITUR_BACKEND` chooses). Build is the time to stream the input in, resolve the time to extract the grammar and expand it back, and every run checks that the expansion equals the input.
 
 ## Tests
 
@@ -158,4 +178,4 @@ Give any number of input files and implementations (`Sequencer`, `Sequencer2`, `
 python -m unittest discover -s tests -t .
 </code></pre>
 
-The tests check the grammar properties above (exact round trip, digram uniqueness, rule utility) for every implementation on the sample files, long runs of one symbol and seeded random inputs. The MCP server tests run when the `mcp` extra is installed, for example in a virtualenv with `pip install -e ".[mcp]"`, the visualizer tests run the page's own JavaScript in Node, when Node is installed, against the Python analysis, and with Jupyter installed (`pip install jupyter`) the notebook is run and its output compared with the output saved in it.
+The tests check the grammar properties above (exact round trip, digram uniqueness, rule utility) for every implementation on the sample files, long runs of one symbol and seeded random inputs. When `pysequitur_rs` is installed, they also compare its grammars with the Python engine's, and `PYSEQUITUR_BACKEND=python` or `rust` runs the whole suite on one engine. The MCP server tests run when the `mcp` extra is installed, for example in a virtualenv with `pip install -e ".[mcp]"`, the visualizer tests run the page's own JavaScript in Node, when Node is installed, against the Python analysis, and with Jupyter installed (`pip install jupyter`) the notebook is run and its output compared with the output saved in it.
