@@ -1,0 +1,234 @@
+[
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "C++ reference (Nevill-Manning)",
+  "language": "C++",
+  "seconds": 0.027187,
+  "memory_mb": 124.3,
+  "rules": 2827,
+  "symbols": 15141,
+  "roundtrip": null,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "C++11 (jsdw)",
+  "language": "C++",
+  "seconds": 0.00838104,
+  "memory_mb": 5.1,
+  "rules": 2827,
+  "symbols": 15141,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "Rust (sequitur-rs)",
+  "language": "Rust",
+  "seconds": 0.005843,
+  "memory_mb": 4.1,
+  "rules": 2827,
+  "symbols": 15141,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "Java port (Eibe Frank, 1997)",
+  "language": "Java",
+  "seconds": 0.026064,
+  "memory_mb": 93.2,
+  "rules": 2710,
+  "symbols": 15026,
+  "roundtrip": true,
+  "same_size_as_cpp": false
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "JavaScript (Nevill-Manning, 2019)",
+  "language": "JavaScript",
+  "seconds": 0.081406709,
+  "memory_mb": 72.7,
+  "rules": 2827,
+  "symbols": 15141,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "pysequitur, CPython 3.12",
+  "language": "Python",
+  "seconds": 0.060817,
+  "memory_mb": 22.2,
+  "rules": 2827,
+  "symbols": 15141,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "pysequitur, PyPy",
+  "language": "Python",
+  "seconds": 0.244363,
+  "memory_mb": 67.2,
+  "rules": 2827,
+  "symbols": 15141,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "scikit-sequitur, Cython",
+  "language": "Python",
+  "seconds": 0.079246,
+  "memory_mb": 19.8,
+  "rules": 2827,
+  "symbols": 15141,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "scikit-sequitur, pure Python",
+  "language": "Python",
+  "seconds": 0.092507,
+  "memory_mb": 19.9,
+  "rules": 2827,
+  "symbols": 15141,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "pysequitur before the fixes",
+  "language": "Python",
+  "seconds": 0.233315,
+  "memory_mb": 21.2,
+  "rules": 2827,
+  "symbols": 15141,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "revelation.txt, 46.5 KB",
+  "implementation": "Python port (Annaswamy, 2013)",
+  "language": "Python",
+  "error": "AttributeError: 'NoneType' object has no attribute 'n'"
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "C++ reference (Nevill-Manning)",
+  "language": "C++",
+  "seconds": 0.424368,
+  "memory_mb": 134.4,
+  "rules": 46218,
+  "symbols": 255047,
+  "roundtrip": null,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "C++11 (jsdw)",
+  "language": "C++",
+  "seconds": 0.388226,
+  "memory_mb": 65.4,
+  "rules": 46218,
+  "symbols": 255005,
+  "roundtrip": true,
+  "same_size_as_cpp": false
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "Rust (sequitur-rs)",
+  "language": "Rust",
+  "seconds": 0.218348,
+  "memory_mb": 56.7,
+  "rules": 46218,
+  "symbols": 255005,
+  "roundtrip": true,
+  "same_size_as_cpp": false
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "Java port (Eibe Frank, 1997)",
+  "language": "Java",
+  "seconds": 0.366324,
+  "memory_mb": 191.8,
+  "rules": 43569,
+  "symbols": 257475,
+  "roundtrip": true,
+  "same_size_as_cpp": false
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "JavaScript (Nevill-Manning, 2019)",
+  "language": "JavaScript",
+  "seconds": 3.244070084,
+  "memory_mb": 335.1,
+  "rules": 46313,
+  "symbols": 255181,
+  "roundtrip": false,
+  "same_size_as_cpp": false
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "pysequitur, CPython 3.12",
+  "language": "Python",
+  "seconds": 2.307083,
+  "memory_mb": 145.3,
+  "rules": 46218,
+  "symbols": 255047,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "pysequitur, PyPy",
+  "language": "Python",
+  "seconds": 1.168496,
+  "memory_mb": 243.7,
+  "rules": 46218,
+  "symbols": 255047,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "scikit-sequitur, Cython",
+  "language": "Python",
+  "seconds": 3.054392,
+  "memory_mb": 134.9,
+  "rules": 46218,
+  "symbols": 255047,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "scikit-sequitur, pure Python",
+  "language": "Python",
+  "seconds": 3.587913,
+  "memory_mb": 135.7,
+  "rules": 46218,
+  "symbols": 255047,
+  "roundtrip": true,
+  "same_size_as_cpp": true
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "pysequitur before the fixes",
+  "language": "Python",
+  "seconds": 8.899775,
+  "memory_mb": 165.8,
+  "rules": 46298,
+  "symbols": 255483,
+  "roundtrip": false,
+  "same_size_as_cpp": false
+ },
+ {
+  "input": "Python source, 1.6 MB",
+  "implementation": "Python port (Annaswamy, 2013)",
+  "language": "Python",
+  "error": "AttributeError: 'NoneType' object has no attribute 'n'"
+ }
+]

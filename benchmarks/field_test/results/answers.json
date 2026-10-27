@@ -1,0 +1,55 @@
+{
+ "refrain": {
+  "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+  "occurrences": 7,
+  "offsets": [
+   2763,
+   3253,
+   3862,
+   5034,
+   5679,
+   6564,
+   7405
+  ]
+ },
+ "duplicates": {
+  "first": [
+   568,
+   592
+  ],
+  "second": [
+   708,
+   732
+  ],
+  "lines": 25,
+  "python": "3.12.12",
+  "sha256": "8b7a477f978a8532852fd81e241c78182516bc4975d672d580a5848a76e11eb6"
+ },
+ "copied": {
+  "passages": [
+   {
+    "first_words": "The rabbit-hole went straight on",
+    "last_words": "down a very deep well.",
+    "chars": 219
+   },
+   {
+    "first_words": "Alice was beginning to get",
+    "last_words": "Alice \u201cwithout pictures or conversations?\u201d",
+    "chars": 303
+   },
+   {
+    "first_words": "Alice was not a bit",
+    "last_words": "lamps hanging from the roof.",
+    "chars": 578
+   },
+   {
+    "first_words": "There was nothing so _very_",
+    "last_words": "large rabbit-hole under the hedge.",
+    "chars": 739
+   }
+  ],
+  "copied_percent": 11.2,
+  "a_chars": 31780,
+  "b_chars": 16689
+ }
+}

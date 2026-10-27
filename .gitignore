@@ -63,3 +63,6 @@ target/
 
 # Virtual environments
 .venv/
+
+# Other implementations fetched by benchmarks/other/fetch.sh
+benchmarks/other/vendor/

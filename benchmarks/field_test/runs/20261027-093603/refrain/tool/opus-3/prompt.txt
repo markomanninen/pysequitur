@@ -1,0 +1,8 @@
+The file revelation.txt is the Greek text of the Book of Revelation, transliterated into Latin letters, in lowercase and without spaces or punctuation. Use the pysequitur tools to answer; there is no other way to read the file.
+
+Which passage of at least 40 letters occurs the most times in the text? Give the passage exactly as it is written there, as long as it can be while it keeps that number of occurrences, and how many times it occurs.
+
+End your answer with a JSON block like this one:
+```json
+{"passage": "...", "occurrences": 0}
+```

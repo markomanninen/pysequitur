@@ -138,6 +138,8 @@ Building the grammar, median of 3 runs on an Apple M4 Pro with Python 3.12:
 
 `Sequencer3` runs in linear time, about 600,000 tokens per second: 1.6 MB of Python source takes 2.5 s and 4.6 MB takes 7.6 s. `Sequencer` and `Sequencer2` compare symbols all the time, and a rule reference now compares itself in Python code so that the rule 2 is never mistaken for the number 2; that makes them about twice as slow as before.
 
+[doc/performance.md](doc/performance.md) has charts of build time against input length, a comparison with ten other implementations in five languages, the correctness checks and the history of the library's performance. [doc/background.md](doc/background.md) collects the research on Sequitur and its uses, and [doc/substack/](doc/substack/) an article on the library.
+
 ### Running benchmarks
 
 <pre><code>

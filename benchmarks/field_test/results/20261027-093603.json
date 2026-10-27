@@ -1,0 +1,1076 @@
+[
+ {
+  "task": "copied",
+  "condition": "text",
+  "model": "haiku",
+  "run": "haiku-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 1,
+  "input": 20426,
+  "output": 10930,
+  "cost": 0.0979419,
+  "seconds": 70.113,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "The rabbit-hole went straight on",
+     "last_words": "down a very deep well"
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "Alice without pictures or conversations"
+    },
+    {
+     "first_words": "There was nothing so very",
+     "last_words": "large rabbit-hole under the hedge"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof"
+    }
+   ],
+   "copied_percent": 17
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 5.800000000000001
+ },
+ {
+  "task": "copied",
+  "condition": "text",
+  "model": "haiku",
+  "run": "haiku-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 1,
+  "input": 20430,
+  "output": 13574,
+  "cost": 0.11116490000000001,
+  "seconds": 87.417,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "The rabbit-hole went straight on",
+     "last_words": "down a very deep well"
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "Alice without pictures or conversations"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof"
+    },
+    {
+     "first_words": "There was nothing so very",
+     "last_words": "large rabbit-hole under the hedge"
+    }
+   ],
+   "copied_percent": 16
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 4.800000000000001
+ },
+ {
+  "task": "copied",
+  "condition": "text",
+  "model": "haiku",
+  "run": "haiku-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 1,
+  "input": 20661,
+  "output": 16663,
+  "cost": 0.1270719,
+  "seconds": 115.315,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "The rabbit-hole went straight on",
+     "last_words": "down a very deep well"
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "Alice without pictures or conversations"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof"
+    },
+    {
+     "first_words": "There was nothing so very",
+     "last_words": "large rabbit-hole under the hedge"
+    }
+   ],
+   "copied_percent": 25
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 13.8
+ },
+ {
+  "task": "copied",
+  "condition": "text",
+  "model": "opus",
+  "run": "opus-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 1,
+  "input": 20630,
+  "output": 1398,
+  "cost": 0.1905346,
+  "seconds": 15.412,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "The rabbit-hole went straight on",
+     "last_words": "down a very deep well."
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "Alice \u201cwithout pictures or conversations?\u201d"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof."
+    },
+    {
+     "first_words": "There was nothing so _very_",
+     "last_words": "large rabbit-hole under the hedge."
+    }
+   ],
+   "copied_percent": 13
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 1.8000000000000007
+ },
+ {
+  "task": "copied",
+  "condition": "text",
+  "model": "opus",
+  "run": "opus-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 1,
+  "input": 20625,
+  "output": 1257,
+  "cost": 0.046627800000000004,
+  "seconds": 16.751,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "The rabbit-hole went straight on",
+     "last_words": "falling down a very deep well."
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "\u201cwithout pictures or conversations?\u201d"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof."
+    },
+    {
+     "first_words": "There was nothing so _very_",
+     "last_words": "large rabbit-hole under the hedge."
+    }
+   ],
+   "copied_percent": 11
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 0.1999999999999993
+ },
+ {
+  "task": "copied",
+  "condition": "text",
+  "model": "opus",
+  "run": "opus-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 1,
+  "input": 20626,
+  "output": 1421,
+  "cost": 0.049950800000000004,
+  "seconds": 16.193,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "The rabbit-hole went straight on",
+     "last_words": "falling down a very deep well."
+    },
+    {
+     "first_words": "Alice was beginning to get very",
+     "last_words": "\u201cwithout pictures or conversations?\u201d"
+    },
+    {
+     "first_words": "Alice was not a bit hurt,",
+     "last_words": "lamps hanging from the roof."
+    },
+    {
+     "first_words": "There was nothing so _very_ remarkable",
+     "last_words": "large rabbit-hole under the hedge."
+    }
+   ],
+   "copied_percent": 13
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 1.8000000000000007
+ },
+ {
+  "task": "copied",
+  "condition": "tool",
+  "model": "haiku",
+  "run": "haiku-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 9,
+  "input": 75892,
+  "output": 9524,
+  "cost": 0.07752909999999999,
+  "seconds": 74.82,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "There was nothing so _very_",
+     "last_words": "large rabbit-hole under the hedge"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof"
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "Alice without pictures or"
+    },
+    {
+     "first_words": "again The rabbit-hole went",
+     "last_words": "down a very deep well"
+    }
+   ],
+   "copied_percent": 11.16
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 0.03999999999999915
+ },
+ {
+  "task": "copied",
+  "condition": "tool",
+  "model": "haiku",
+  "run": "haiku-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 7,
+  "input": 55775,
+  "output": 7368,
+  "cost": 0.061813900000000005,
+  "seconds": 60.797,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "There was nothing so very",
+     "last_words": "large rabbit-hole under the hedge"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof"
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "thought Alice without pictures or"
+    },
+    {
+     "first_words": "The rabbit-hole went straight on",
+     "last_words": "down a very deep well"
+    }
+   ],
+   "copied_percent": 11.16
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 0.03999999999999915
+ },
+ {
+  "task": "copied",
+  "condition": "tool",
+  "model": "haiku",
+  "run": "haiku-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 10,
+  "input": 77496,
+  "output": 9568,
+  "cost": 0.0801403,
+  "seconds": 77.074,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "There was nothing so very",
+     "last_words": "large rabbit-hole under the hedge"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof"
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "Alice without pictures or conversations"
+    },
+    {
+     "first_words": "again The rabbit-hole went straight",
+     "last_words": "falling down a very deep"
+    }
+   ],
+   "copied_percent": 11.16
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 0.03999999999999915
+ },
+ {
+  "task": "copied",
+  "condition": "tool",
+  "model": "opus",
+  "run": "opus-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 4,
+  "input": 39701,
+  "output": 1119,
+  "cost": 0.0737146,
+  "seconds": 18.752,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "The rabbit-hole went straight on",
+     "last_words": "falling down a very deep well."
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "\u201cwithout pictures or conversations?\u201d"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof."
+    },
+    {
+     "first_words": "There was nothing so _very_",
+     "last_words": "rabbit-hole under the hedge."
+    }
+   ],
+   "copied_percent": 11
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 0.1999999999999993
+ },
+ {
+  "task": "copied",
+  "condition": "tool",
+  "model": "opus",
+  "run": "opus-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 3,
+  "input": 28197,
+  "output": 1130,
+  "cost": 0.0585662,
+  "seconds": 13.577,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "again. The rabbit-hole went straight",
+     "last_words": "down a very deep well."
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "thought Alice \u201cwithout pictures or conversations?\u201d"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof."
+    },
+    {
+     "first_words": "There was nothing so _very_",
+     "last_words": "large rabbit-hole under the hedge."
+    }
+   ],
+   "copied_percent": 11.2
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 0.0
+ },
+ {
+  "task": "copied",
+  "condition": "tool",
+  "model": "opus",
+  "run": "opus-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 3,
+  "input": 28194,
+  "output": 1318,
+  "cost": 0.0623078,
+  "seconds": 19.614,
+  "error": false,
+  "answer": {
+   "passages": [
+    {
+     "first_words": "The rabbit-hole went straight on",
+     "last_words": "down a very deep well."
+    },
+    {
+     "first_words": "Alice was beginning to get",
+     "last_words": "Alice \u201cwithout pictures or conversations?\u201d"
+    },
+    {
+     "first_words": "Alice was not a bit",
+     "last_words": "lamps hanging from the roof."
+    },
+    {
+     "first_words": "There was nothing so _very_",
+     "last_words": "large rabbit-hole under the hedge."
+    }
+   ],
+   "copied_percent": 11.2
+  },
+  "correct": true,
+  "found": 4,
+  "false": 0,
+  "percent_error": 0.0
+ },
+ {
+  "task": "duplicates",
+  "condition": "text",
+  "model": "haiku",
+  "run": "haiku-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 1,
+  "input": 16210,
+  "output": 6036,
+  "cost": 0.0608229,
+  "seconds": 37.303,
+  "error": false,
+  "answer": {
+   "first": [
+    573,
+    585
+   ],
+   "second": [
+    713,
+    725
+   ]
+  },
+  "correct": false,
+  "exact": false
+ },
+ {
+  "task": "duplicates",
+  "condition": "text",
+  "model": "haiku",
+  "run": "haiku-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 1,
+  "input": 16211,
+  "output": 5607,
+  "cost": 0.0586949,
+  "seconds": 32.297,
+  "error": false,
+  "answer": {
+   "first": [
+    573,
+    585
+   ],
+   "second": [
+    713,
+    725
+   ]
+  },
+  "correct": false,
+  "exact": false
+ },
+ {
+  "task": "duplicates",
+  "condition": "text",
+  "model": "haiku",
+  "run": "haiku-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 1,
+  "input": 16209,
+  "output": 9786,
+  "cost": 0.0795759,
+  "seconds": 59.925,
+  "error": false,
+  "answer": {
+   "first": [
+    573,
+    585
+   ],
+   "second": [
+    713,
+    725
+   ]
+  },
+  "correct": false,
+  "exact": false
+ },
+ {
+  "task": "duplicates",
+  "condition": "text",
+  "model": "opus",
+  "run": "opus-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 1,
+  "input": 14621,
+  "output": 763,
+  "cost": 0.1255556,
+  "seconds": 9.19,
+  "error": false,
+  "answer": {
+   "first": [
+    568,
+    592
+   ],
+   "second": [
+    708,
+    732
+   ]
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "duplicates",
+  "condition": "text",
+  "model": "opus",
+  "run": "opus-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 1,
+  "input": 14625,
+  "output": 860,
+  "cost": 0.033341,
+  "seconds": 10.648,
+  "error": false,
+  "answer": {
+   "first": [
+    568,
+    592
+   ],
+   "second": [
+    708,
+    732
+   ]
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "duplicates",
+  "condition": "text",
+  "model": "opus",
+  "run": "opus-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 1,
+  "input": 14622,
+  "output": 779,
+  "cost": 0.031717,
+  "seconds": 9.186,
+  "error": false,
+  "answer": {
+   "first": [
+    568,
+    592
+   ],
+   "second": [
+    708,
+    732
+   ]
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "duplicates",
+  "condition": "tool",
+  "model": "haiku",
+  "run": "haiku-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 5,
+  "input": 67556,
+  "output": 5585,
+  "cost": 0.0503948,
+  "seconds": 44.808,
+  "error": false,
+  "answer": {
+   "first": [
+    568,
+    592
+   ],
+   "second": [
+    708,
+    732
+   ]
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "duplicates",
+  "condition": "tool",
+  "model": "haiku",
+  "run": "haiku-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 3,
+  "input": 37532,
+  "output": 2805,
+  "cost": 0.0277191,
+  "seconds": 21.619,
+  "error": false,
+  "answer": {
+   "first": [
+    568,
+    592
+   ],
+   "second": [
+    708,
+    732
+   ]
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "duplicates",
+  "condition": "tool",
+  "model": "haiku",
+  "run": "haiku-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 4,
+  "input": 56326,
+  "output": 3795,
+  "cost": 0.038980100000000004,
+  "seconds": 35.12,
+  "error": false,
+  "answer": {
+   "first": [
+    568,
+    592
+   ],
+   "second": [
+    708,
+    732
+   ]
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "duplicates",
+  "condition": "tool",
+  "model": "opus",
+  "run": "opus-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 4,
+  "input": 30349,
+  "output": 1041,
+  "cost": 0.080235,
+  "seconds": 17.289,
+  "error": false,
+  "answer": {
+   "first": [
+    568,
+    592
+   ],
+   "second": [
+    708,
+    732
+   ]
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "duplicates",
+  "condition": "tool",
+  "model": "opus",
+  "run": "opus-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 3,
+  "input": 29031,
+  "output": 714,
+  "cost": 0.054995,
+  "seconds": 11.513,
+  "error": false,
+  "answer": {
+   "first": [
+    568,
+    592
+   ],
+   "second": [
+    708,
+    732
+   ]
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "duplicates",
+  "condition": "tool",
+  "model": "opus",
+  "run": "opus-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 4,
+  "input": 30571,
+  "output": 1164,
+  "cost": 0.07628879999999999,
+  "seconds": 20.499,
+  "error": false,
+  "answer": {
+   "first": [
+    568,
+    592
+   ],
+   "second": [
+    708,
+    732
+   ]
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "refrain",
+  "condition": "text",
+  "model": "haiku",
+  "run": "haiku-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 1,
+  "input": 28620,
+  "output": 15047,
+  "cost": 0.1431259,
+  "seconds": 98.608,
+  "error": false,
+  "answer": {
+   "passage": "oieklesiaieisekklisiakaisardeiskaieisfiladelfeiankaieislaodikeian",
+   "occurrences": 0
+  },
+  "correct": false,
+  "exact": false
+ },
+ {
+  "task": "refrain",
+  "condition": "text",
+  "model": "haiku",
+  "run": "haiku-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 2,
+  "input": 89051,
+  "output": 34961,
+  "cost": 0.309177,
+  "seconds": 647.633,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsia",
+   "occurrences": 2
+  },
+  "correct": false,
+  "exact": false
+ },
+ {
+  "task": "refrain",
+  "condition": "text",
+  "model": "haiku",
+  "run": "haiku-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 1,
+  "input": 28623,
+  "output": 22880,
+  "cost": 0.1822769,
+  "seconds": 372.8,
+  "error": false,
+  "answer": {
+   "passage": "kaioieikositessarespresbuteroiepesonenwpiontouarniouexontesekastoskiqaras",
+   "occurrences": 5
+  },
+  "correct": false,
+  "exact": false
+ },
+ {
+  "task": "refrain",
+  "condition": "text",
+  "model": "opus",
+  "run": "opus-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 2,
+  "input": 153693,
+  "output": 129602,
+  "cost": 3.5949415999999994,
+  "seconds": 821.174,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+   "occurrences": 7
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "refrain",
+  "condition": "text",
+  "model": "opus",
+  "run": "opus-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 2,
+  "input": 154958,
+  "output": 129342,
+  "cost": 3.5998544,
+  "seconds": 880.249,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+   "occurrences": 7
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "refrain",
+  "condition": "text",
+  "model": "opus",
+  "run": "opus-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 1,
+  "input": 31398,
+  "output": 1531,
+  "cost": 0.300038,
+  "seconds": 15.332,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+   "occurrences": 7
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "refrain",
+  "condition": "tool",
+  "model": "haiku",
+  "run": "haiku-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 4,
+  "input": 51586,
+  "output": 1777,
+  "cost": 0.043442499999999995,
+  "seconds": 17.352,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+   "occurrences": 7
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "refrain",
+  "condition": "tool",
+  "model": "haiku",
+  "run": "haiku-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 5,
+  "input": 67579,
+  "output": 1946,
+  "cost": 0.0308194,
+  "seconds": 22.036,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+   "occurrences": 7
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "refrain",
+  "condition": "tool",
+  "model": "haiku",
+  "run": "haiku-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001"
+  ],
+  "turns": 4,
+  "input": 51236,
+  "output": 1355,
+  "cost": 0.0233349,
+  "seconds": 12.51,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+   "occurrences": 7
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "refrain",
+  "condition": "tool",
+  "model": "opus",
+  "run": "opus-1",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 4,
+  "input": 39955,
+  "output": 1504,
+  "cost": 0.1311058,
+  "seconds": 24.405,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+   "occurrences": 7
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "refrain",
+  "condition": "tool",
+  "model": "opus",
+  "run": "opus-2",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 5,
+  "input": 42179,
+  "output": 1493,
+  "cost": 0.08371600000000001,
+  "seconds": 18.614,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+   "occurrences": 7
+  },
+  "correct": true,
+  "exact": true
+ },
+ {
+  "task": "refrain",
+  "condition": "tool",
+  "model": "opus",
+  "run": "opus-3",
+  "models_used": [
+   "claude-haiku-4-5-20251001",
+   "claude-opus-5-5"
+  ],
+  "turns": 4,
+  "input": 39519,
+  "output": 1438,
+  "cost": 0.0725792,
+  "seconds": 29.986,
+  "error": false,
+  "answer": {
+   "passage": "oexwnousakousatwtitopneumalegeitaisekklhsiais",
+   "occurrences": 7
+  },
+  "correct": true,
+  "exact": true
+ }
+]

@@ -1,0 +1,8 @@
+The file contextlib.py is a Python source file from the standard library. Use the pysequitur tools to answer; there is no other way to read the file.
+
+Find the longest block of consecutive lines that appears twice, identically, in this file. Give the first and the last line number of each of its two copies.
+
+End your answer with a JSON block like this one:
+```json
+{"first": [0, 0], "second": [0, 0]}
+```
