@@ -162,6 +162,7 @@ g.arcs.focused g.arc.on path.line { stroke: var(--accent); stroke-width: 2; }
 ::highlight(seq-sel) { background-color: var(--sel); color: var(--ink); }
 .detail { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
 .detail-head { display: flex; align-items: baseline; gap: 8px; }
+.detail-head .clear { margin-left: auto; }
 .rid { font-family: var(--mono); font-size: 12px; color: var(--ink-2); border: 1px solid var(--border); border-radius: 6px; padding: 0 6px; }
 .phrase {
   font-family: var(--mono); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere;
@@ -289,7 +290,7 @@ body[data-figure="table"] main > :not(#table-card) { display: none !important; }
           <label>At least <input id="arc-min" type="number" min="1" step="1"> characters</label>
         </div>
       </div>
-      <p class="caption">Each band joins two consecutive occurrences of a repeated phrase, and its width is the phrase's length. The phrases that cover the most text are drawn; select one to see all of its occurrences.</p>
+      <p class="caption">Each band joins two consecutive occurrences of a repeated phrase, and its width is the phrase's length. The phrases that cover the most text are drawn. Click one to see all of its occurrences; click it again, or anywhere else in the diagram, or press Esc to clear the selection.</p>
       <div id="arcs" class="chart"></div>
     </section>
 
@@ -807,8 +808,8 @@ body[data-figure="table"] main > :not(#table-card) { display: none !important; }
     });
     root.addEventListener('pointerleave', function () { S.hover = 0; emphasise(); hideTip(); });
     root.addEventListener('click', function (ev) {
-      var g = ev.target.closest && ev.target.closest('g.arc');
-      if (g) select(+g.dataset.r, null);
+      var g = ev.target.closest && ev.target.closest('g.arc'), r = g ? +g.dataset.r : 0;
+      select(r === S.sel ? 0 : r, null);
     });
     box.append(root);
     emphasise();
@@ -963,6 +964,10 @@ body[data-figure="table"] main > :not(#table-card) { display: none !important; }
     S.sel = r;
     S.chain = chain;
     S.outside = false;
+    var hash = new URLSearchParams(location.hash.slice(1));
+    if (r) hash.set('rule', r); else hash.delete('rule');
+    var link = hash.toString();
+    history.replaceState(null, '', link ? '#' + link : location.pathname + location.search);
     // redraw when the selection needs its own bands, or drops the bands of the previous one
     var drawn = arcData.some(function (a) { return a.r === r && !a.extra; });
     if (arcData.some(function (a) { return a.extra; }) || (r && !drawn)) renderArcs(); else emphasise();
@@ -1027,7 +1032,9 @@ body[data-figure="table"] main > :not(#table-card) { display: none !important; }
       });
       box.append(crumbs);
     }
-    box.append(el('div', { class: 'detail-head' }, el('h2', { text: 'Repeated phrase' }), el('span', { class: 'rid', text: 'R' + r })));
+    box.append(el('div', { class: 'detail-head' }, el('h2', { text: 'Repeated phrase' }), el('span', { class: 'rid', text: 'R' + r }),
+      el('button', { class: 'btn small clear', type: 'button', title: 'Clear the selection (Esc)', text: 'Clear',
+                     onclick: function () { select(0, null); } })));
     box.append(phraseBlock(V.expand(C, r, 4000), R.chars[r] > 4000));
     var stats = el('dl', { class: 'stats' });
     var occurs = positions(r).length;
@@ -1199,6 +1206,9 @@ body[data-figure="table"] main > :not(#table-card) { display: none !important; }
     showTip(ev, '×' + fmt(V.occurrences(C, r)), [{ text: oneLine(V.preview(C, r, 120)), mono: true }, 'click to inspect the innermost phrase here'], true);
   });
   $('text').addEventListener('pointerleave', hideTip);
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && M && S.sel && !ev.target.closest('input, textarea, select')) select(0, null);
+  });
   $('arc-n').addEventListener('input', function () { S.arcN = +this.value; renderArcs(); });
   $('arc-min').addEventListener('change', function () { S.arcMin = Math.max(1, +this.value || 1); renderArcs(); });
   $('filter').addEventListener('input', function () { S.filter = this.value; renderTable(); });
