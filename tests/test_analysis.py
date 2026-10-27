@@ -193,12 +193,17 @@ class TestDocuments(unittest.TestCase):
             self.assertGreaterEqual(len(phrase['documents']), 2)
             for name in phrase['documents']:
                 self.assertIn(phrase['text'], texts[name])
+        self.assertTrue(shared['overlaps_computed'])
         fractions = {(o['document'], o['other']): o['shared_fraction'] for o in shared['overlaps']}
         self.assertEqual(len(fractions), 6)
         self.assertTrue(all(0 <= f <= 1 for f in fractions.values()))
-        # mix is made of the other two, so most of it is shared with one or the other
-        self.assertGreater(fractions[('mix', 'iamsam')] + fractions[('mix', 'genesis')], 0.6)
-        self.assertLess(fractions[('genesis', 'iamsam')], fractions[('mix', 'iamsam')])
+        # mix is the first 900 characters of iamsam followed by the first 700 of genesis
+        mix = len(texts['mix'])
+        self.assertAlmostEqual(fractions[('mix', 'iamsam')], 900 / mix, places=2)
+        self.assertAlmostEqual(fractions[('mix', 'genesis')], 700 / mix, places=2)
+        self.assertEqual(fractions[('genesis', 'iamsam')], 0)
+        # genesis repeats passages of its opening, which mix has, so more than 700 characters count
+        self.assertGreater(fractions[('genesis', 'mix')], 700 / len(texts['genesis']))
 
     def test_document_filter(self):
         listing = self.a.repeats(document='genesis', limit=1000)

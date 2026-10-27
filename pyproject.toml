@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pysequitur"
 version = "0.2.0"
-description = "Sequitur grammar inference: the repeated phrases of a text and how they nest, with an MCP server for agents"
+description = "Sequitur grammar inference: the repeated phrases of a text and how they nest, with an MCP server for agents and a visualizer"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -18,9 +18,13 @@ mcp = ["mcp>=2.3,<3"]
 
 [project.scripts]
 pysequitur-mcp = "pysequitur.mcp_server:main"
+pysequitur-viz = "pysequitur.viz:main"
 
 [project.urls]
 Homepage = "https://github.com/markomanninen/pysequitur"
 
 [tool.setuptools]
 packages = ["pysequitur", "pysequitur.sequiturpython"]
+
+[tool.setuptools.package-data]
+pysequitur = ["viz_app.html"]

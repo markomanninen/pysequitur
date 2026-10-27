@@ -95,12 +95,36 @@ Other clients take the usual configuration:
 | `list_repeats` | Ranks repeated phrases by coverage, length, occurrences or depth, filtered by length, count, contained text or document. |
 | `get_rule` | One phrase in detail: its parts, the phrases that contain it, and its positions with line, column and context. |
 | `find_phrase` | Where any phrase occurs, whether it is itself a repeat, and which repeats contain it. |
-| `shared_phrases` | The longest passages several documents have in common, and how much of each document also occurs in each other one. |
+| `shared_phrases` | The longest passages several documents have in common, and how much of each document also appears word for word in each other one. |
 | `repetition_profile` | How much of each stretch of a document is repeated material: boilerplate, refrains, duplicated sections. |
 | `get_grammar` | The grammar as text. |
+| `render_visualization` | Writes the visualizer's report of an analysis as an HTML file (under `--root`) for a person to open. |
 | `list_analyses` | The analyses the server holds. |
 
-Use word tokens for prose, line tokens for code, logs and data files (they find duplicated blocks of lines), and character tokens for text without spaces. Analysing `revelation.txt`, which has no spaces at all, by characters takes 0.1 s and finds its longest refrain, "he that hath an ear, let him hear what the Spirit saith unto the churches", as `oexwnousakousatwtitopneumalegeitaisekklhsiais`.
+Use word tokens for prose, line tokens for code, logs and data files (they find duplicated blocks of lines), and character tokens for text without spaces. `revelation.txt` is the Greek text of the Book of Revelation in lowercase Beta Code letters (`h` = η, `q` = θ, `w` = ω, ...) with no accents, punctuation or word spaces. Analysed by characters, it takes 0.1 s, and its longest repeats are built around the refrain "he that hath an ear, let him hear what the Spirit saith unto the churches", which the grammar finds as a phrase of its own: `oexwnousakousatwtitopneumalegeitaisekklhsiais`.
+
+## Visualizer
+
+`pysequitur-viz` shows what repeats in a text, where, and how the repeats nest:
+
+<pre><code>
+pysequitur-viz iamsam.txt                      # open the app in a browser
+pysequitur-viz genesis1.txt iamsam.txt         # several documents, and what they share
+pysequitur-viz revelation.txt --tokens char    # text without spaces
+pysequitur-viz iamsam.txt -o iamsam.html       # write a self-contained report
+pysequitur-viz                                 # paste or open texts in the app
+</code></pre>
+
+The page has:
+
+- the share of the text inside repeats, the number of repeated phrases, the longest repeat and the deepest nesting
+- an arc diagram, where each band joins two consecutive occurrences of a repeated phrase and its width is the phrase's length
+- how much of each stretch of the text is repeated
+- the text with its repeated passages shaded: click anywhere to see the innermost phrase there, the phrases around it, what it is made of, and all of its occurrences
+- a sortable, filterable table of the repeated phrases
+- for several documents, how much of each also appears word for word in each other one, and their longest shared passages
+
+The app runs on a local server at 127.0.0.1 and needs nothing beyond Python; a report is one HTML file with no external resources. Both have light and dark themes.
 
 ## Performance
 
@@ -130,4 +154,4 @@ Give any number of input files and implementations (`Sequencer`, `Sequencer2`, `
 python -m unittest discover -s tests -t .
 </code></pre>
 
-The tests check the grammar properties above (exact round trip, digram uniqueness, rule utility) for every implementation on the sample files, long runs of one symbol and seeded random inputs. The MCP server tests run when the `mcp` extra is installed, for example in a virtualenv with `pip install -e ".[mcp]"`.
+The tests check the grammar properties above (exact round trip, digram uniqueness, rule utility) for every implementation on the sample files, long runs of one symbol and seeded random inputs. The MCP server tests run when the `mcp` extra is installed, for example in a virtualenv with `pip install -e ".[mcp]"`, and the visualizer tests run the page's own JavaScript in Node, when Node is installed, against the Python analysis.

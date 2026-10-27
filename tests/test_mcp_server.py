@@ -19,7 +19,7 @@ from .support import ROOT, sample
 logging.getLogger('mcp').setLevel(logging.WARNING)
 
 TOOLS = {'analyze', 'list_repeats', 'get_rule', 'find_phrase', 'shared_phrases', 'repetition_profile',
-         'get_grammar', 'list_analyses'}
+         'get_grammar', 'render_visualization', 'list_analyses'}
 
 
 @unittest.skipIf(Client is None, 'the mcp extra is not installed')
@@ -57,8 +57,24 @@ class TestTools(unittest.TestCase):
             with self.subTest(tool=tool.name):
                 self.assertTrue(tool.description)
                 self.assertTrue(tool.output_schema)
-                self.assertTrue(tool.annotations.read_only_hint)
+                # only the report tool writes anything
+                self.assertEqual(tool.annotations.read_only_hint, tool.name != 'render_visualization')
         self.assertIn('analysis_id', instructions)
+
+    def test_render_visualization(self):
+        analysis = self.ok('analyze', path='iamsam.txt')['analysis_id']
+        report = self.ok('render_visualization', analysis_id=analysis)
+        self.assertEqual(report['path'], os.path.join(os.path.realpath(self.root), analysis + '.html'))
+        with open(report['path'], encoding='utf-8') as f:
+            page = f.read()
+        self.assertEqual(len(page.encode('utf-8')), report['bytes'])
+        self.assertIn('data-mode="report"', page)
+        self.assertIn('exists', self.error('render_visualization', analysis_id=analysis))
+        self.ok('render_visualization', analysis_id=analysis, overwrite=True)
+        self.ok('render_visualization', analysis_id=analysis, path='nested.html')
+        self.assertIn('outside', self.error('render_visualization', analysis_id=analysis, path='/tmp/x.html'))
+        self.assertIn('ending in .html', self.error('render_visualization', analysis_id=analysis, path='x.py'))
+        self.assertIn('No such directory', self.error('render_visualization', analysis_id=analysis, path='no/x.html'))
 
     def test_text_and_follow_up_queries(self):
         text = sample('iamsam.txt')

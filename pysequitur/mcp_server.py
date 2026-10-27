@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
 from .analysis import Analysis, PhraseMatches, Profile, RepeatList, RuleDetail, SharedPhrases, Summary
+from .viz import write_html
 
 INSTRUCTIONS = """\
 Sequitur finds every phrase that repeats in a text and arranges the repeats into a hierarchy (a grammar).
@@ -36,6 +37,7 @@ Sequitur finds every phrase that repeats in a text and arranges the repeats into
    - repetition_profile shows where in a document the repetition is
    - shared_phrases lists passages that several documents have in common
    - get_grammar prints the whole grammar
+   - render_visualization writes an interactive HTML report for a person to open
 
 Tokens: 'word' (default) suits prose; 'line' suits code, logs and data, where it finds duplicated
 blocks of lines; 'char' suits text without spaces and patterns inside words.
@@ -51,6 +53,11 @@ class DocumentInput(BaseModel):
     name: Optional[str] = Field(None, description='name to report the document by; defaults to the path')
     text: Optional[str] = Field(None, description='the text of the document')
     path: Optional[str] = Field(None, description='path of a UTF-8 text file to read instead of text')
+
+
+class Report(TypedDict):
+    path: str
+    bytes: int
 
 
 class AnalysisInfo(TypedDict):
@@ -105,6 +112,19 @@ class Files(object):
                 with open(full, encoding='utf-8', errors='replace') as f:
                     return f.read()
         raise ToolError('No such file: %s' % ', '.join(sorted(set(allowed))))
+
+    def writable(self, path, overwrite):
+        """Where to write an HTML file: under the first allowed directory unless absolute."""
+        full = os.path.realpath(os.path.join(self.roots[0], os.path.expanduser(path)))
+        if not any(os.path.commonpath([root, full]) == root for root in self.roots):
+            raise ToolError('%s is outside the directories this server may use (%s).' % (path, ', '.join(self.roots)))
+        if os.path.splitext(full)[1].lower() not in ('.html', '.htm'):
+            raise ToolError('The report is HTML: give a path ending in .html.')
+        if not os.path.isdir(os.path.dirname(full)):
+            raise ToolError('No such directory: %s' % os.path.dirname(full))
+        if os.path.exists(full) and not overwrite:
+            raise ToolError('%s exists; pass overwrite=true to replace it.' % full)
+        return full
 
 
 def _query(method, *args, **kwargs):
@@ -216,7 +236,8 @@ def create_server(roots=None, max_chars=5000000, max_analyses=16):
     ) -> SharedPhrases:
         """
         For an analysis of several documents: the longest passages they have in common, and for each
-        pair of documents the share of one's text that also occurs in the other.
+        pair of documents the share of one that also appears word for word in the other, in passages
+        of at least min_chars characters.
         """
         return _query(store.get(analysis_id).shared, min_documents=min_documents, min_chars=min_chars,
                       limit=limit)
@@ -244,6 +265,23 @@ def create_server(roots=None, max_chars=5000000, max_analyses=16):
         quoted strings are literal text, and | separates documents.
         """
         return store.get(analysis_id).grammar_text(max_rules=max_rules, max_line=max_line_chars)
+
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False,
+                                             openWorldHint=False))
+    def render_visualization(
+        analysis_id: AnalysisId,
+        path: Annotated[Optional[str], Field(
+            description='HTML file to write, under the allowed directories; default <analysis_id>.html')] = None,
+        overwrite: Annotated[bool, Field(description='replace the file if it exists')] = False,
+    ) -> Report:
+        """
+        Write a self-contained interactive HTML report of an analysis, for a person to open in a
+        browser: the text with its repeats shaded, an arc diagram joining the occurrences of each
+        repeated phrase, how much of each stretch is repeated, and every phrase's structure.
+        """
+        analysis = store.get(analysis_id)
+        target = files.writable(path or analysis.id + '.html', overwrite)
+        return Report(path=target, bytes=write_html(analysis, target))
 
     @server.tool(annotations=READ_ONLY)
     def list_analyses() -> List[AnalysisInfo]:

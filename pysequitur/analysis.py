@@ -41,6 +41,8 @@ SORT_KEYS = ('coverage', 'length', 'occurrences', 'depth')
 _WORD = re.compile(r'\w+|\s+|[^\w\s]')
 # phrase lookups classify at most this many occurrences by the rule they sit in
 _CLASSIFY_LIMIT = 2000
+# documents are compared word for word only up to this many characters in all
+_OVERLAP_LIMIT = 2000000
 
 
 class Position(TypedDict):
@@ -146,12 +148,14 @@ class SharedPhrase(TypedDict):
 class Overlap(TypedDict):
     document: str
     other: str
-    shared_fraction: float  # share of the document's characters in repeats that also occur in other
+    shared_fraction: float  # share of the document also found word for word in other, in passages of min_chars or more
 
 
 class SharedPhrases(TypedDict):
     analysis_id: str
+    min_chars: int
     phrases: List[SharedPhrase]
+    overlaps_computed: bool  # False when the documents are too large to compare
     overlaps: List[Overlap]
 
 
@@ -643,7 +647,10 @@ class Analysis(object):
                              outside_repeats=outside, classified=classified)
 
     def shared(self, min_documents=2, min_chars=10, limit=20, max_text=300):
-        """Phrases that occur in several documents, longest first, and how much the documents share."""
+        """
+        Phrases of at least min_chars that occur in several documents, longest first, and for
+        each pair of documents the share of one that is made of such phrases the other also has.
+        """
         if self._per_document is None:
             raise ValueError('shared phrases need an analysis of two or more documents')
         candidates = [r for r in range(1, len(self.rules))
@@ -664,40 +671,48 @@ class Analysis(object):
                                         documents=self.document_counts(r)))
             if len(phrases) >= limit:
                 break
-        overlaps = []
-        if len(self.documents) <= 12:
-            for a, doc in enumerate(self.documents):
-                for b, other in enumerate(self.documents):
-                    if a != b:
-                        covered = self._covered(a, b)
-                        overlaps.append(Overlap(document=doc.name, other=other.name,
-                                                shared_fraction=round(covered / len(doc.text), 4) if doc.text else 0.0))
-        return SharedPhrases(analysis_id=self.id, phrases=phrases, overlaps=overlaps)
+        overlaps = self._overlaps(min_chars)
+        return SharedPhrases(analysis_id=self.id, min_chars=min_chars, phrases=phrases,
+                             overlaps_computed=overlaps is not None, overlaps=overlaps or [])
 
-    def _covered(self, a, b):
-        """Characters of document a inside repeats that also occur in document b."""
-        doc = self.documents[a]
-        offsets = self._root_prefix()
-        i = bisect.bisect_left(offsets, doc.first)
-        end = doc.first + doc.count
-        covered = 0
-        stack = []
-        root = self.rules[0]
-        while i < len(root) and offsets[i] < end:
-            stack.append((root[i], offsets[i]))
-            i += 1
-            while stack:
-                x, pos = stack.pop()
-                if type(x) is not RuleIndex:
-                    continue
-                if b in (self._per_document[x] or ()):
-                    covered += doc.char_offset(pos - doc.first + self.length[x]) - doc.char_offset(pos - doc.first)
-                    continue
-                inner = pos
-                for y in self.rules[x]:
-                    stack.append((y, inner))
-                    inner += self.length[y] if type(y) is RuleIndex else 1
-        return covered
+    def _overlaps(self, min_chars):
+        """
+        For each ordered pair of documents, the share of the first that also occurs word for
+        word in the second, in passages of at least min_chars characters; None when the
+        documents are too large to compare in memory.
+
+        A position counts when some passage of min_chars characters around it occurs in the
+        other document. This is exact where the grammar is not: a long shared passage is often
+        split over several rules, and phrases of it can recur elsewhere.
+        """
+        texts = [d.text.lower() if self.ignore_case else d.text for d in self.documents]
+        if sum(map(len, texts)) > _OVERLAP_LIMIT:
+            return None
+        n = max(1, min_chars)
+        owners = {}  # hash of a passage of n characters -> bit set of the documents having it
+        for i, text in enumerate(texts):
+            bit = 1 << i
+            for p in range(len(text) - n + 1):
+                key = hash(text[p:p + n])
+                owners[key] = owners.get(key, 0) | bit
+        overlaps = []
+        for a, text in enumerate(texts):
+            covered = [0] * len(texts)
+            reached = [0] * len(texts)  # end of the covered stretch so far, per other document
+            others = ~(1 << a)
+            for p in range(len(text) - n + 1):
+                mask = owners[hash(text[p:p + n])] & others
+                while mask:
+                    low = mask & -mask
+                    b = low.bit_length() - 1
+                    mask ^= low
+                    covered[b] += p + n - max(p, reached[b])
+                    reached[b] = p + n
+            for b, other in enumerate(self.documents):
+                if a != b:
+                    overlaps.append(Overlap(document=self.documents[a].name, other=other.name,
+                                            shared_fraction=round(covered[b] / len(text), 4) if text else 0.0))
+        return overlaps
 
     def profile(self, document=None, segments=20):
         """How much of each stretch of a document is repeated material."""
