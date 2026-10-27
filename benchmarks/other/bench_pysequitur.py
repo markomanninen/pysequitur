@@ -2,6 +2,7 @@
 Times pysequitur on a file, then measures the grammar it built and expands it back:
 
     python bench_pysequitur.py core FILE    # pysequitur.core, behind Sequencer3
+    python bench_pysequitur.py rust FILE    # the compiled engine (pysequitur_rs) behind Sequencer3
     python bench_pysequitur.py port FILE    # pysequitur.sequiturpython, the older port
 
 Put another checkout first on PYTHONPATH to measure it instead.
@@ -13,12 +14,16 @@ import time
 mode, path = sys.argv[1], sys.argv[2]
 text = open(path, encoding='utf-8').read()
 
-if mode == 'core':
-    from pysequitur.core import Grammar
+if mode in ('core', 'rust'):
+    if mode == 'core':
+        from pysequitur.core import Grammar
+    else:
+        from pysequitur.backend import RustGrammar as Grammar
     start = time.perf_counter()
     grammar = Grammar(text)
     seconds = time.perf_counter() - start
     rules = grammar.rules()
+    rules_seconds = time.perf_counter() - start - seconds
     symbols = sum(len(body) for body in rules)
 
     def expand(i, out):
@@ -29,7 +34,8 @@ if mode == 'core':
                 out.append(x)
         return out
     sys.setrecursionlimit(100000)
-    result = {'rules': len(rules) - 1, 'symbols': symbols, 'roundtrip': ''.join(expand(0, [])) == text}
+    result = {'rules': len(rules) - 1, 'symbols': symbols, 'roundtrip': ''.join(expand(0, [])) == text,
+              'rules_seconds': round(rules_seconds, 6)}
 else:
     from pysequitur.sequiturpython.grammar import Grammar
     from pysequitur.sequiturpython.symbol import NonTerminal

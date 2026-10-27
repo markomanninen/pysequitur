@@ -11,6 +11,7 @@ Times are medians of three runs, each in a fresh process. They cover building
 the grammar only; reading the input and starting the process or the virtual
 machine are left out, except for the C++ program, which is timed as a whole.
 """
+import importlib.util
 import json
 import os
 import re
@@ -54,6 +55,9 @@ def implementations():
          ['node', 'bench_js.js', str(VENDOR / 'sequitur' / 'javascript' / 'main.js')], None),
         ('pysequitur, CPython 3.12', 'Python', [py, 'bench_pysequitur.py', 'core'], env_new),
     ]
+    if importlib.util.find_spec('pysequitur_rs'):
+        # the compiled engine built from rust/, behind Sequencer3 when installed
+        found.append(('pysequitur, Rust backend', 'Rust', [py, 'bench_pysequitur.py', 'rust'], env_new))
     pypy = shutil.which('pypy3') or shutil.which('pypy3.10')
     if pypy:
         found.append(('pysequitur, PyPy', 'Python', [pypy, 'bench_pysequitur.py', 'core'], env_new))
