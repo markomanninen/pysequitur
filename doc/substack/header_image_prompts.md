@@ -17,3 +17,11 @@ Color palette: muted slate blue-grey background, off-white paper tones for the s
 
 Atmosphere: calm, precise, curious. No people, no hands, no robots, no logos, no magnifying glasses, no padlocks.
 ```
+
+## Drawn from data instead
+
+The header was not generated from this prompt. `make_header.py` draws the same
+composition from pysequitur's own analysis of `samples/peaseporridge.txt` by
+characters: every band joins two consecutive occurrences of a repeated phrase,
+and the three amber bands join the occurrences of "pease porridge". That keeps
+the arcs true to the algorithm and the lettering spelled right.
