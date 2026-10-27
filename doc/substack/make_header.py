@@ -4,7 +4,7 @@ Porridge Hot": the text on a strip of paper, and an arc for every pair of
 consecutive occurrences of each repeated phrase, the arcs of "pease porridge"
 in amber.
 
-    python doc/substack/make_header.py     # writes article_images/header.png
+    python doc/substack/make_header.py     # writes article_images/header_drawn.png
 """
 import subprocess
 import sys
@@ -105,7 +105,7 @@ svg{display:block}
     with tempfile.TemporaryDirectory() as tmp:
         page_path = Path(tmp) / 'header.html'
         page_path.write_text(page)
-        out = HERE / 'article_images' / 'header.png'
+        out = HERE / 'article_images' / 'header_drawn.png'
         subprocess.run([CHROME, '--headless=new', '--force-device-scale-factor=2', '--hide-scrollbars',
                         '--window-size=%d,%d' % (W, H), '--screenshot=%s' % out, page_path.as_uri()],
                        check=True, capture_output=True)

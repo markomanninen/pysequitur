@@ -11,8 +11,8 @@ languages, and what its tools changed for Claude agents asked about repetition.
 | [pysequitur_article_substack.md](pysequitur_article_substack.md) | The same text for Substack, with the tables as images |
 | [pysequitur_article_substack.html](pysequitur_article_substack.html) | Its body as HTML, the source the Substack draft is pasted from |
 | [article_images/](article_images/) | Header image, the two table images and three screenshots of the visualizer |
-| [header_image_prompts.md](header_image_prompts.md) | The prompt for the header image, and how it was drawn instead |
-| [make_header.py](make_header.py) | Draws the header image from pysequitur's analysis of "Pease Porridge Hot" |
+| [header_image_prompts.md](header_image_prompts.md) | The prompt the header image was generated from with Figma |
+| [make_header.py](make_header.py) | Draws an alternative header, `header_drawn.png`, from pysequitur's analysis of "Pease Porridge Hot" |
 | [make_images.py](make_images.py) | Renders the table images and the screenshots with headless Chrome |
 | [make_substack.py](make_substack.py) | Makes the Substack markdown and HTML from the article |
 

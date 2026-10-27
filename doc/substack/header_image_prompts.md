@@ -18,12 +18,14 @@ Color palette: muted slate blue-grey background, off-white paper tones for the s
 Atmosphere: calm, precise, curious. No people, no hands, no robots, no logos, no magnifying glasses, no padlocks.
 ```
 
-## Drawn from data instead
+## How the header was made
 
-The header was not generated from this prompt. `make_header.py` draws the same
-composition from pysequitur's own analysis of `samples/peaseporridge.txt` by
-characters: every band joins two consecutive occurrences of a repeated phrase,
-and the three amber bands join the occurrences of "pease porridge". That keeps
-the arcs true to the algorithm and the lettering spelled right.
+`article_images/header.png` was generated from this prompt with Figma's image
+generator (model gpt-image-2.5-sunburst, 1536 × 864), with the lettering
+changed to "pySequitur", spelled exactly p-y-S-e-q-u-i-t-u-r (small p, small y,
+capital S). Both words came out spelled right on the first try.
 
-The lettering says "pySequitur", the library's name, rather than the prompt's "Sequitur".
+`article_images/header_drawn.png` is an alternative that `make_header.py` draws
+from pysequitur's own analysis of `samples/peaseporridge.txt` by characters:
+every band joins two consecutive occurrences of a repeated phrase, and the
+three amber bands join the occurrences of "pease porridge".
