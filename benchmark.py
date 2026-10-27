@@ -1,15 +1,16 @@
 """
 Benchmark the Sequitur implementations.
 
-    python benchmark.py genesis1.txt Sequencer3
-    python benchmark.py genesis1.txt iamsam.txt revelation.txt Sequencer3 Sequencer
-    python benchmark.py revelation.txt --tokens word --runs 5 --json
+    python benchmark.py samples/genesis1.txt Sequencer3
+    python benchmark.py samples/genesis1.txt samples/iamsam.txt samples/revelation.txt Sequencer3 Sequencer
+    python benchmark.py samples/iamsam.txt --tokens word --runs 5 --json
 
 Build is the time to stream every token in; resolve is the time to extract the
 grammar and expand it back. Every run checks that the expansion equals the input.
 """
 import argparse
 import json
+import os
 import re
 import statistics
 import sys
@@ -77,7 +78,7 @@ def main():
         parser.error('no input files given')
 
     if not args.json:
-        print('%-18s %-11s %9s %10s %11s %12s %7s  %s' % (
+        print('%-20s %-11s %9s %10s %11s %12s %7s  %s' % (
             'file', 'version', 'tokens', 'build (s)', 'resolve (s)', 'tokens/s', 'rules', 'round trip'))
     failed = False
     for path in files:
@@ -91,8 +92,8 @@ def main():
             if args.json:
                 print(json.dumps(row))
             else:
-                print('%-18s %-11s %9d %10.4f %11.4f %12d %7d  %s' % (
-                    path[-18:], name, row['tokens'], row['build_seconds'], row['resolve_seconds'],
+                print('%-20s %-11s %9d %10.4f %11.4f %12d %7d  %s' % (
+                    os.path.basename(path)[:20], name, row['tokens'], row['build_seconds'], row['resolve_seconds'],
                     row['tokens_per_second'] or 0, row['rules'], 'ok' if row['round_trip'] else 'FAILED'))
     return 1 if failed else 0
 

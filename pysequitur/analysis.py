@@ -9,7 +9,7 @@ positions and nesting. The MCP server and the visualizer are built on it.
 
     from pysequitur.analysis import Analysis
 
-    a = Analysis.from_text(open('iamsam.txt').read(), tokens='word')
+    a = Analysis.from_text(open('samples/iamsam.txt').read(), tokens='word')
     a.summary()['repeated_fraction']
     a.repeats(sort_by='coverage', limit=5)
     a.rule(3)

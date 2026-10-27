@@ -11,6 +11,7 @@ from pysequitur.sequiturpython.grammar import Grammar
 from pysequitur.sequiturpython.symbol import RuleIndex
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SAMPLES_DIR = os.path.join(ROOT, 'samples')
 SAMPLES = ['peaseporridge.txt', 'genesis1.txt', 'iamsam.txt', 'revelation.txt']
 
 # Fed to the original port before the fix, this input left the main rule as a
@@ -19,7 +20,7 @@ CYCLIC_INPUT = 'ababbbbbaaaababbbabbbaaaaaaaababaaaaabbbbbbbbbbabbb'
 
 
 def sample(name):
-    with open(os.path.join(ROOT, name)) as f:
+    with open(os.path.join(SAMPLES_DIR, name)) as f:
         return f.read()
 
 

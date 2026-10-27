@@ -13,7 +13,7 @@ try:
 except ImportError:  # the mcp extra is not installed
     Client = None
 
-from .support import ROOT, sample
+from .support import ROOT, SAMPLES_DIR, sample
 
 # the server logs every failed call; the failures here are deliberate
 logging.getLogger('mcp').setLevel(logging.WARNING)
@@ -28,7 +28,7 @@ class TestTools(unittest.TestCase):
     def setUp(self):
         self.root = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.root)
-        shutil.copy(os.path.join(ROOT, 'iamsam.txt'), self.root)
+        shutil.copy(os.path.join(SAMPLES_DIR, 'iamsam.txt'), self.root)
         self.server = create_server([self.root])
 
     def call(self, tool, **arguments):
@@ -116,7 +116,7 @@ class TestTools(unittest.TestCase):
         # relative paths are looked up in every root
         other = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, other)
-        shutil.copy(os.path.join(ROOT, 'genesis1.txt'), other)
+        shutil.copy(os.path.join(SAMPLES_DIR, 'genesis1.txt'), other)
         self.server = create_server([self.root, other])
         self.assertEqual(self.ok('analyze', path='genesis1.txt')['documents'][0]['chars'],
                          len(sample('genesis1.txt')))
@@ -166,13 +166,13 @@ class TestStdio(unittest.TestCase):
 
         async def go():
             async with Client(server) as client:
-                summary = await client.call_tool('analyze', {'path': 'genesis1.txt'})
+                summary = await client.call_tool('analyze', {'path': 'samples/genesis1.txt'})
                 grammar = await client.call_tool('get_grammar', {
                     'analysis_id': summary.structured_content['analysis_id'], 'max_rules': 2})
                 return summary, grammar
         summary, grammar = asyncio.run(go())
         self.assertFalse(summary.is_error, summary.content)
-        self.assertEqual(summary.structured_content['documents'][0]['name'], 'genesis1.txt')
+        self.assertEqual(summary.structured_content['documents'][0]['name'], 'samples/genesis1.txt')
         self.assertIn('R1', grammar.content[0].text)
 
 

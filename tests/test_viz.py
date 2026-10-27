@@ -17,7 +17,7 @@ import urllib.request
 from pysequitur.analysis import Analysis
 from pysequitur.viz import _template, main, make_server, model, render_html
 
-from .support import ROOT, sample
+from .support import SAMPLES_DIR, sample
 
 EMOJI_TEXT = 'ok 🎉 ok 🎉 fine. ok 🎉 ok 🎉 fine! 𝔘𝔫𝔦𝔠𝔬𝔡𝔢 ok 🎉'
 
@@ -101,7 +101,7 @@ class TestPage(unittest.TestCase):
         out = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, out)
         path = os.path.join(out, 'report.html')
-        self.assertEqual(main([os.path.join(ROOT, 'iamsam.txt'), '-o', path]), 0)
+        self.assertEqual(main([os.path.join(SAMPLES_DIR, 'iamsam.txt'), '-o', path]), 0)
         with open(path, encoding='utf-8') as f:
             self.assertIn('"tokenization":"word"', f.read())
 

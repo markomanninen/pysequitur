@@ -17,7 +17,7 @@ All three take any hashable tokens: characters, words, lines or numbers.
 <pre><code>
 from pysequitur import Sequencer3, print_grammar
 
-input_string = open('peaseporridge.txt', 'r').read()
+input_string = open('samples/peaseporridge.txt', 'r').read()
 s = Sequencer3(input_string)
 print_grammar(s)
 </code></pre>
@@ -62,7 +62,7 @@ print_grammar(Sequencer3(tokens))
 <pre><code>
 from pysequitur.analysis import Analysis
 
-a = Analysis.from_text(open('iamsam.txt').read(), tokens='word')
+a = Analysis.from_text(open('samples/iamsam.txt').read(), tokens='word')
 a.summary()['repeated_fraction']           # 0.9625: almost all of the text is repeated material
 a.repeats(min_chars=12, limit=3)           # 'I do not like' ×12, 'green eggs and ham' ×8, ...
 a.find('Sam-I-am')['positions'][0]         # {'document': 'text', 'line': 6, 'column': 6, 'context': 'That «Sam-I-am»...'}
@@ -101,18 +101,18 @@ Other clients take the usual configuration:
 | `render_visualization` | Writes the visualizer's report of an analysis as an HTML file (under `--root`) for a person to open. |
 | `list_analyses` | The analyses the server holds. |
 
-Use word tokens for prose, line tokens for code, logs and data files (they find duplicated blocks of lines), and character tokens for text without spaces. `revelation.txt` is the Greek text of the Book of Revelation in lowercase Beta Code letters (`h` = η, `q` = θ, `w` = ω, ...) with no accents, punctuation or word spaces. Analysed by characters, it takes 0.1 s, and its longest repeats are built around the refrain "he that hath an ear, let him hear what the Spirit saith unto the churches", which the grammar finds as a phrase of its own: `oexwnousakousatwtitopneumalegeitaisekklhsiais`.
+Use word tokens for prose, line tokens for code, logs and data files (they find duplicated blocks of lines), and character tokens for text without spaces. `samples/revelation.txt` is the Greek text of the Book of Revelation in lowercase Beta Code letters (`h` = η, `q` = θ, `w` = ω, ...) with no accents, punctuation or word spaces. Analysed by characters, it takes 0.1 s, and its longest repeats are built around the refrain "he that hath an ear, let him hear what the Spirit saith unto the churches", which the grammar finds as a phrase of its own: `oexwnousakousatwtitopneumalegeitaisekklhsiais`.
 
 ## Visualizer
 
 `pysequitur-viz` shows what repeats in a text, where, and how the repeats nest:
 
 <pre><code>
-pysequitur-viz iamsam.txt                      # open the app in a browser
-pysequitur-viz genesis1.txt iamsam.txt         # several documents, and what they share
-pysequitur-viz revelation.txt --tokens char    # text without spaces
-pysequitur-viz iamsam.txt -o iamsam.html       # write a self-contained report
-pysequitur-viz                                 # paste or open texts in the app
+pysequitur-viz samples/iamsam.txt                          # open the app in a browser
+pysequitur-viz samples/genesis1.txt samples/iamsam.txt     # several documents, and what they share
+pysequitur-viz samples/revelation.txt --tokens char        # text without spaces
+pysequitur-viz samples/iamsam.txt -o iamsam.html           # write a self-contained report
+pysequitur-viz                                             # paste or open texts in the app
 </code></pre>
 
 The page has:
@@ -141,9 +141,9 @@ Building the grammar, median of 3 runs on an Apple M4 Pro with Python 3.12:
 ### Running benchmarks
 
 <pre><code>
-python benchmark.py genesis1.txt Sequencer3
-python benchmark.py genesis1.txt iamsam.txt revelation.txt Sequencer3 Sequencer --runs 5
-python benchmark.py iamsam.txt --tokens word --json
+python benchmark.py samples/genesis1.txt Sequencer3
+python benchmark.py samples/genesis1.txt samples/iamsam.txt samples/revelation.txt Sequencer3 Sequencer --runs 5
+python benchmark.py samples/iamsam.txt --tokens word --json
 </code></pre>
 
 Give any number of input files and implementations (`Sequencer`, `Sequencer2`, `Sequencer3`; default `Sequencer3`). Build is the time to stream the input in, resolve the time to extract the grammar and expand it back, and every run checks that the expansion equals the input.

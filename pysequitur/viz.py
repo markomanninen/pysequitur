@@ -4,10 +4,10 @@
 Visualizer: an interactive page that shows what repeats in a text, where, and
 how the repeats nest.
 
-    pysequitur-viz iamsam.txt                    # open the app in a browser
-    pysequitur-viz a.txt b.txt --tokens line     # several documents
-    pysequitur-viz iamsam.txt -o iamsam.html     # write a self-contained report
-    pysequitur-viz                               # paste or open texts in the app
+    pysequitur-viz samples/iamsam.txt                  # open the app in a browser
+    pysequitur-viz a.txt b.txt --tokens line           # several documents
+    pysequitur-viz samples/iamsam.txt -o iamsam.html   # write a self-contained report
+    pysequitur-viz                                     # paste or open texts in the app
 
 The app is one HTML page with no external resources. As a report, the data is
 embedded in it; as an app, a local server analyses what is pasted or opened.
