@@ -2,6 +2,8 @@
 
 Sequitur (Nevill-Manning & Witten, 1997) reads a sequence one symbol at a time and builds a context-free grammar of its repetitions: every pair of adjacent symbols occurs only once in the grammar, and every rule is used at least twice. The rules are the repeated phrases of the input, nested into a hierarchy.
 
+The article [Giving AI agents an eye for repetition](https://markotmanninen.substack.com/p/giving-ai-agents-an-eye-for-repetition) explains how Sequitur works, how pysequitur compares with other implementations, and what its tools changed for AI agents asked about repetition.
+
 For more information see: [Jupyter Notebook](https://github.com/markomanninen/pysequitur/blob/master/Python%20Sequitur%20Algorithms.ipynb) on GitHub or [Jupyter Notebook](http://nbviewer.jupyter.org/github/markomanninen/pysequitur/blob/master/Python%20Sequitur%20Algorithms.ipynb) on nbviewer.
 
 ## Implementations
@@ -138,7 +140,7 @@ Building the grammar, median of 3 runs on an Apple M4 Pro with Python 3.12:
 
 `Sequencer3` runs in linear time, about 600,000 tokens per second: 1.6 MB of Python source takes 2.5 s and 4.6 MB takes 7.6 s. `Sequencer` and `Sequencer2` compare symbols all the time, and a rule reference now compares itself in Python code so that the rule 2 is never mistaken for the number 2; that makes them about twice as slow as before.
 
-[doc/performance.md](doc/performance.md) has charts of build time against input length, a comparison with ten other implementations in five languages, the correctness checks and the history of the library's performance. [doc/background.md](doc/background.md) collects the research on Sequitur and its uses, and [doc/substack/](doc/substack/) an article on the library.
+[doc/performance.md](doc/performance.md) has charts of build time against input length, a comparison with ten other implementations in five languages, the correctness checks and the history of the library's performance. [doc/background.md](doc/background.md) collects the research on Sequitur and its uses, and [doc/substack/](doc/substack/) has the [article](https://markotmanninen.substack.com/p/giving-ai-agents-an-eye-for-repetition) with the scripts behind its images.
 
 ### Running benchmarks
 
