@@ -105,6 +105,49 @@ class TestEdgeCases(unittest.TestCase):
                 with self.subTest(impl=impl, tokens=tokens):
                     self.assertEqual(violations(build(impl, tokens), tokens), [])
 
+    def test_integer_tokens(self):
+        # numbers stream like any token, and are never mistaken for rule references
+        # (since Python 3.9 compares list items to the needle the other way round,
+        # rule 2 used to equal the token 2 inside Sequencer and Sequencer2)
+        tokens = [1, 2, 3, 4, 2, 3, 1, 2, 3, 4, 1, 2, 3, 4, 2, 3, 1, 2, 3, 4]
+        for impl in VALID:
+            with self.subTest(impl=impl):
+                self.assertEqual(violations(build(impl, tokens), tokens), [])
+        with self.subTest(impl='Sequencer2'):
+            self.assertNotIn('expansion differs from input', violations(build('Sequencer2', tokens), tokens))
+
+    def test_integer_subclass_tokens(self):
+        # the notebook wraps its numbers in a class like this one
+        class Int(int):
+            def __eq__(self, other):
+                return isinstance(other, Int) and int.__eq__(self, other)
+
+            __hash__ = int.__hash__
+
+        tokens = [Int(x) for x in (1, 2, 3, 4, 2, 3, 1, 2, 3, 4, 1, 2, 3, 4, 2, 3, 1, 2, 3, 4)]
+        for impl in VALID:
+            with self.subTest(impl=impl):
+                self.assertEqual(violations(build(impl, tokens), tokens), [])
+
+    def test_rule_index_equals_only_rule_indexes(self):
+        from pysequitur.sequiturpython.symbol import RuleIndex
+
+        class Int(int):  # as in the notebook
+            def __eq__(self, other):
+                return isinstance(other, Int) and int.__eq__(self, other)
+
+            __hash__ = int.__hash__
+
+        # Python asks a subclass first, so plain ints are kept apart on either side;
+        # floats, and int subclasses that keep int's equality, compare equal from the left
+        for other in (2, Int(2)):
+            self.assertFalse(RuleIndex(2) == other)
+            self.assertFalse(other == RuleIndex(2))
+        self.assertTrue(2 != RuleIndex(2))
+        self.assertEqual(RuleIndex(2), RuleIndex(2))
+        self.assertEqual(len({RuleIndex(2), RuleIndex(2)}), 1)
+        self.assertNotIn(RuleIndex(2), [2, Int(2)])
+
     @unittest.expectedFailure
     def test_sequencer2_rule_utility(self):
         """Known limitation: Sequencer2 can keep a rule that is used only once."""

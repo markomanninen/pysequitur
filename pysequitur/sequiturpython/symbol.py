@@ -12,6 +12,19 @@ class RuleIndex(int):
     # Python 3.8 removed int.__str__, so str() would fall back to __repr__
     __str__ = int.__repr__
 
+    # A rule index equals only another rule index: rule 2 is not the number 2,
+    # on either side of ==. Equality of int subclasses depends on operand order,
+    # and Python 3.9 reversed the order in which `in` and list.index() compare.
+    # (Python asks a subclass first, which covers plain ints; a float, or an int
+    # subclass keeping int's equality, still compares equal from the left.)
+    def __eq__(self, other):
+        return isinstance(other, RuleIndex) and int.__eq__(self, other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    __hash__ = int.__hash__
+
 class Symbol(object):
     """docstring for Symbol"""
 

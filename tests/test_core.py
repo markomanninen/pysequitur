@@ -48,8 +48,10 @@ class TestGrammar(unittest.TestCase):
         self.assertEqual(g.rules(), Grammar(text).rules())
 
     def test_rule_references(self):
+        R = RuleIndex
         rules = Grammar('abcabdabcabd').rules()
-        self.assertEqual(rules, [[1, 1], [2, 'c', 2, 'd'], ['a', 'b']])
+        self.assertEqual(rules, [[R(1), R(1)], [R(2), 'c', R(2), 'd'], ['a', 'b']])
+        self.assertNotEqual(rules[0][0], 1)
         self.assertIsInstance(rules[0][0], RuleIndex)
         self.assertNotIsInstance(rules[1][1], RuleIndex)
 

@@ -465,6 +465,7 @@ class Analysis(object):
             frame[1] = i + 1
             if type(x) is RuleIndex:
                 frame[2] = offset + length[x]
+                x = int(x)  # a RuleIndex equals only RuleIndexes; rule and inside hold ints
                 if x == rule:
                     found.append(offset)
                     if limit is not None and len(found) >= limit:
@@ -604,14 +605,14 @@ class Analysis(object):
         x = self.rules[0][i]
         if type(x) is not RuleIndex or g1 >= offsets[i] + self.length[x]:
             return 0
-        rule, pos = x, offsets[i]
+        rule, pos = int(x), offsets[i]  # rule numbers as ints, like the rest of the results
         while True:
             for x in self.rules[rule]:
                 size = self.length[x] if type(x) is RuleIndex else 1
                 if pos <= g0 and g1 < pos + size:
                     if type(x) is not RuleIndex:
                         return rule
-                    rule = x
+                    rule = int(x)
                     break
                 if pos + size > g0:
                     return rule  # the span straddles symbols of this rule

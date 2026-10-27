@@ -132,11 +132,11 @@ Building the grammar, median of 3 runs on an Apple M4 Pro with Python 3.12:
 
 | Implementation | genesis1.txt (2.5 KB) | iamsam.txt (3.5 KB) | revelation.txt (46.5 KB) |
 |----------------|-----------------------|---------------------|--------------------------|
-| Sequencer3     | 0.004 s               | 0.006 s             | 0.07 s                   |
-| Sequencer      | 0.05 s                | 0.08 s              | 10.7 s                   |
-| Sequencer2     | 0.13 s                | 0.19 s              | 36.8 s                   |
+| Sequencer3     | 0.004 s               | 0.006 s             | 0.06 s                   |
+| Sequencer      | 0.11 s                | 0.18 s              | 38.4 s                   |
+| Sequencer2     | 0.22 s                | 0.32 s              | 67.6 s                   |
 
-`Sequencer3` runs in linear time, about 600,000 tokens per second: 1.6 MB of Python source takes 2.5 s and 4.6 MB takes 7.6 s.
+`Sequencer3` runs in linear time, about 600,000 tokens per second: 1.6 MB of Python source takes 2.5 s and 4.6 MB takes 7.6 s. `Sequencer` and `Sequencer2` compare symbols all the time, and a rule reference now compares itself in Python code so that the rule 2 is never mistaken for the number 2; that makes them about twice as slow as before.
 
 ### Running benchmarks
 
@@ -154,4 +154,4 @@ Give any number of input files and implementations (`Sequencer`, `Sequencer2`, `
 python -m unittest discover -s tests -t .
 </code></pre>
 
-The tests check the grammar properties above (exact round trip, digram uniqueness, rule utility) for every implementation on the sample files, long runs of one symbol and seeded random inputs. The MCP server tests run when the `mcp` extra is installed, for example in a virtualenv with `pip install -e ".[mcp]"`, and the visualizer tests run the page's own JavaScript in Node, when Node is installed, against the Python analysis.
+The tests check the grammar properties above (exact round trip, digram uniqueness, rule utility) for every implementation on the sample files, long runs of one symbol and seeded random inputs. The MCP server tests run when the `mcp` extra is installed, for example in a virtualenv with `pip install -e ".[mcp]"`, the visualizer tests run the page's own JavaScript in Node, when Node is installed, against the Python analysis, and with Jupyter installed (`pip install jupyter`) the notebook is run and its output compared with the output saved in it.

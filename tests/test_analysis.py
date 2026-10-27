@@ -3,6 +3,7 @@ import re
 import unittest
 
 from pysequitur.analysis import Analysis, tokenize
+from pysequitur.sequiturpython.symbol import RuleIndex
 
 from .support import sample
 
@@ -86,8 +87,7 @@ class TestSingleDocument(unittest.TestCase):
             detail = a.rule(rule, max_positions=3, max_text=10 ** 6)
             with self.subTest(rule=rule):
                 self.assertEqual(''.join(p['text'] for p in detail['body']), detail['text'])
-                self.assertEqual(detail['references'],
-                                 sum(body.count(rule) for body in a.rules if rule in body))
+                self.assertEqual(detail['references'], sum(body.count(RuleIndex(rule)) for body in a.rules))
                 self.assertEqual(len(detail['positions']), min(3, detail['occurrences']))
                 for p in detail['positions']:
                     self.assertIn('«' + detail['text'][:5], p['context'])
