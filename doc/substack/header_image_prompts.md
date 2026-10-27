@@ -25,3 +25,5 @@ composition from pysequitur's own analysis of `samples/peaseporridge.txt` by
 characters: every band joins two consecutive occurrences of a repeated phrase,
 and the three amber bands join the occurrences of "pease porridge". That keeps
 the arcs true to the algorithm and the lettering spelled right.
+
+The lettering says "pySequitur", the library's name, rather than the prompt's "Sequitur".

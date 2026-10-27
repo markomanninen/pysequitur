@@ -99,7 +99,7 @@ svg{display:block}
  <rect x='%d' y='%d' width='%d' height='52' rx='2' fill='#ece5d6' filter='url(#paper)'/>
 </g>
 %s
-<text x='70' y='150' style="font:italic 104px 'Baskerville','Georgia',serif;fill:#f1e2c4;letter-spacing:1px">Sequitur</text>
+<text x='70' y='150' style="font:italic 104px 'Baskerville','Georgia',serif;fill:#f1e2c4;letter-spacing:1px">pySequitur</text>
 </svg>""" % (W, H, agent, ''.join(bands), X0 - 22, STRIP_TOP, W - 2 * (X0 - 22), X0 - 22, STRIP_TOP,
               W - 2 * (X0 - 22), ''.join(glyphs))
     with tempfile.TemporaryDirectory() as tmp:
