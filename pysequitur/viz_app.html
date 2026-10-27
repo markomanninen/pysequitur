@@ -226,6 +226,13 @@ table.heat { width: auto; }
 .tip-line { color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
 .tip-line.mono { font-family: var(--mono); color: var(--ink); }
 
+/* figure views, for screenshots and embedding: report.html#figure=overview */
+body[data-figure] .actions, body[data-figure] #input { display: none !important; }
+body[data-figure="overview"] main > :not(#tiles):not(#tabs):not(#arcs-card) { display: none !important; }
+body[data-figure="phrase"] main > :not(#reading) { display: none !important; }
+body[data-figure="shared"] main > :not(#shared) { display: none !important; }
+body[data-figure="table"] main > :not(#table-card) { display: none !important; }
+
 @media (max-width: 900px) {
   .split { grid-template-columns: minmax(0, 1fr); }
   .detail { position: static; max-height: none; }
@@ -274,7 +281,7 @@ table.heat { width: auto; }
     <section class="tiles" id="tiles" aria-label="Summary"></section>
     <nav class="tabs" id="tabs" role="tablist" aria-label="Documents" hidden></nav>
 
-    <section class="card">
+    <section class="card" id="arcs-card">
       <div class="card-head">
         <h2>Repeats along the text</h2>
         <div class="controls">
@@ -286,7 +293,7 @@ table.heat { width: auto; }
       <div id="arcs" class="chart"></div>
     </section>
 
-    <section class="card">
+    <section class="card" id="profile-card">
       <div class="card-head">
         <h2>Share of each stretch that is repeated</h2>
         <button id="profile-toggle" class="btn small" type="button" aria-expanded="false">Show table</button>
@@ -295,7 +302,7 @@ table.heat { width: auto; }
       <div id="profile-table" class="table-wrap" hidden></div>
     </section>
 
-    <div class="split">
+    <div class="split" id="reading">
       <section class="card">
         <div class="card-head">
           <h2>Text</h2>
@@ -306,7 +313,7 @@ table.heat { width: auto; }
       <aside id="detail" class="card detail" aria-live="polite"></aside>
     </div>
 
-    <section class="card">
+    <section class="card" id="table-card">
       <div class="card-head">
         <h2>Repeated phrases</h2>
         <div class="controls">
@@ -910,9 +917,12 @@ table.heat { width: auto; }
         if (+span.dataset.r === S.sel) span.classList.add('sel');
         return;
       }
-      var node = span.firstChild, a = p[1] - M.root[4 * i + 1], range = document.createRange();
-      range.setStart(node, a);
-      range.setEnd(node, Math.min(node.length, a + length));
+      // an occurrence found in the text can run over several passages of the main rule
+      var end = Math.min(p[1] + length, shown), j = V.pieceAt(C, S.doc, end - 1), last = j < 0 ? null : spanOf(j);
+      if (!last) return;
+      var range = document.createRange();
+      range.setStart(span.firstChild, p[1] - M.root[4 * i + 1]);
+      range.setEnd(last.firstChild, end - M.root[4 * j + 1]);
       ranges.push(range);
     });
     if (supported && ranges.length) CSS.highlights.set('seq-sel', new Highlight(...ranges));
@@ -1262,12 +1272,22 @@ table.heat { width: auto; }
     });
   }
 
-  // a link such as report.html#doc=1&rule=12 opens on that document and phrase
+  // A link such as report.html#doc=1&rule=12 opens on that document and phrase. For
+  // screenshots and embedding, theme=light|dark sets the theme, and figure=overview|phrase|
+  // shared|table shows only that part of the page.
   function follow() {
     var hash = new URLSearchParams(location.hash.slice(1)), d = +hash.get('doc'), r = +hash.get('rule');
+    var theme = hash.get('theme'), figure = hash.get('figure');
+    if (theme === 'light' || theme === 'dark') applyTheme(theme);
+    if (figure) document.body.dataset.figure = figure;
+    else delete document.body.dataset.figure;
     if (!M) return;
     if (d > 0 && d < M.docs.length) showDocument(d);
-    if (r > 0 && r < C.n) select(r, null);
+    if (r > 0 && r < C.n) {
+      select(r, null);
+      var first = positions(r).filter(function (p) { return p[0] === S.doc; })[0];
+      if (first) goTo(first[0], first[1]);
+    }
   }
   window.addEventListener('hashchange', follow);
 
