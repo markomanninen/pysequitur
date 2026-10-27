@@ -1,0 +1,15 @@
+[build-system]
+requires = ["maturin>=1.5,<2"]
+build-backend = "maturin"
+
+[project]
+name = "pysequitur-rs"
+version = "0.1.0"
+description = "Optional compiled engine for pysequitur's Sequencer3, the same grammar in Rust"
+license = "MIT"
+authors = [{ name = "Marko Manninen" }]
+requires-python = ">=3.9"
+
+[tool.maturin]
+module-name = "pysequitur_rs"
+features = ["extension-module"]

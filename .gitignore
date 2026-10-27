@@ -66,3 +66,8 @@ target/
 
 # Other implementations fetched by benchmarks/other/fetch.sh
 benchmarks/other/vendor/
+
+# The compiled engine in rust/: built extensions on macOS and Windows (its
+# virtualenv .venv/, cargo's target/ and *.so are ignored above)
+*.dylib
+*.pyd

@@ -3,6 +3,7 @@
 # file: main.py
 
 from .core import Grammar
+from .backend import new_grammar
 from .sequiturpython.symbol import RuleIndex, RULE_INDEX_STR
 
 # Few constants for presentation logics
@@ -443,13 +444,21 @@ class Sequencer3():
     first ported here from the JavaScript version:
     https://github.com/mspandit/sequitur-python
     The engine is core.Grammar; tokens can be any hashable values.
+
+    The same engine compiled from rust/ (pysequitur_rs) is used instead when it
+    is installed; it builds the same grammar. backend='python' or 'rust' picks
+    one for this sequencer, and the PYSEQUITUR_BACKEND environment variable
+    picks the default (see pysequitur.backend).
     """
-    def __init__(self, seq = None, utilize = True):
+    def __init__(self, seq = None, utilize = True, backend = None):
         self.grammar_cache = None
-        self.g = Grammar()
+        self.g = new_grammar(backend)
         if seq:
-            for c in seq:
-                self.stream(c, utilize)
+            if type(self.g) is Grammar or type(self).stream is not Sequencer3.stream:
+                for c in seq:
+                    self.stream(c, utilize)
+            else:
+                self.g.feed(seq)
 
     def stream(self, c, utilize = True):
         # new input invalidates the grammar returned by get()

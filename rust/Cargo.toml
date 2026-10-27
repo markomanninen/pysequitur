@@ -1,0 +1,22 @@
+[package]
+name = "pysequitur-rs"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Compiled engine for pysequitur's Sequencer3"
+publish = false
+
+[lib]
+name = "pysequitur_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.30"
+
+[features]
+# set by maturin (see pyproject.toml): do not link libpython into the extension
+extension-module = ["pyo3/extension-module"]
+
+[profile.release]
+lto = true
+codegen-units = 1
