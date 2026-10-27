@@ -32,14 +32,19 @@ library on prefixes of 1.6 MB of Python source, each in a fresh process.
   new digram with every rule. They stop in the chart where a run passed 30
   seconds; at that rate the Book of Revelation (46.5 KB) takes about 40 and 70
   seconds.
+- **The compiled engine**, which `Sequencer3` uses when `pysequitur_rs` is
+  built from `rust/` and installed, is not in the chart: it builds the same
+  grammar 19 times faster, the 1.6 MB in 0.14 s (see the
+  [comparison](#comparison-with-other-implementations)).
 
 ## Comparison with other implementations
 
 `benchmarks/other/compare.py` runs ten other implementations on the same two
-inputs and compares the grammar each builds with that of Nevill-Manning's C++
-reference; `benchmarks/other/same_grammar.py` checks that pysequitur's grammar
-is the same text, rule for rule. `benchmarks/other/fetch.sh` fetches and builds
-the others at fixed commits.
+inputs, and pysequitur's compiled engine when it is installed, and compares the
+grammar each builds with that of Nevill-Manning's C++ reference;
+`benchmarks/other/same_grammar.py` checks that pysequitur's grammar, from either
+engine, is the same text, rule for rule. `benchmarks/other/fetch.sh` fetches
+and builds the others at fixed commits.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/compare-dark.svg">
@@ -48,16 +53,17 @@ the others at fixed commits.
 
 | Implementation | Revelation, 46.5 KB | MB | 1.6 MB of source | MB | Rules, symbols on source | Expands back |
 |---|---:|---:|---:|---:|---:|---|
-| C++ reference (Nevill-Manning) | 0.027 s | 124 | 0.42 s | 134 | 46,218, 255,047 | -, the reference |
-| C++11 (jsdw) | 0.008 s | 5 | 0.39 s | 65 | 46,218, 255,005 | yes |
-| Rust (sequitur-rs) | 0.006 s | 4 | 0.22 s | 57 | 46,218, 255,005 | yes |
-| Java port (Eibe Frank, 1997) | 0.026 s | 93 | 0.37 s | 192 | 43,569, 257,475 | yes |
-| JavaScript (Nevill-Manning, 2019) | 0.081 s | 73 | 3.24 s | 335 | 46,313, 255,181 | **no** |
-| pysequitur, CPython 3.12 | 0.061 s | 22 | 2.31 s | 145 | same as C++ | yes |
-| pysequitur, PyPy | 0.244 s | 67 | 1.17 s | 244 | same as C++ | yes |
-| scikit-sequitur, Cython | 0.079 s | 20 | 3.05 s | 135 | same as C++ | yes |
-| scikit-sequitur, pure Python | 0.093 s | 20 | 3.59 s | 136 | same as C++ | yes |
-| pysequitur before the fixes | 0.233 s | 21 | 8.90 s | 166 | 46,298, 255,483 | **no** |
+| C++ reference (Nevill-Manning) | 0.026 s | 124 | 0.41 s | 134 | 46,218, 255,047 | -, the reference |
+| C++11 (jsdw) | 0.008 s | 5 | 0.49 s | 65 | 46,218, 255,005 | yes |
+| Rust (sequitur-rs) | 0.006 s | 4 | 0.23 s | 57 | 46,218, 255,005 | yes |
+| Java port (Eibe Frank, 1997) | 0.027 s | 82 | 0.31 s | 195 | 43,569, 257,475 | yes |
+| JavaScript (Nevill-Manning, 2019) | 0.077 s | 73 | 3.22 s | 335 | 46,313, 255,181 | **no** |
+| pysequitur, CPython 3.12 | 0.057 s | 21 | 2.55 s | 144 | same as C++ | yes |
+| pysequitur, Rust backend | 0.002 s | 20 | 0.14 s | 118 | same as C++ | yes |
+| pysequitur, PyPy | 0.218 s | 67 | 1.23 s | 245 | same as C++ | yes |
+| scikit-sequitur, Cython | 0.077 s | 20 | 3.23 s | 131 | same as C++ | yes |
+| scikit-sequitur, pure Python | 0.090 s | 20 | 3.76 s | 144 | same as C++ | yes |
+| pysequitur before the fixes | 0.239 s | 21 | 9.22 s | 167 | 46,298, 255,483 | **no** |
 | Python port (Annaswamy, 2013) | crashes | | crashes | | | |
 
 Times are medians of three runs, for building the grammar only, except the C++
@@ -65,8 +71,12 @@ reference, which is timed as a whole process. Memory is the peak resident size
 of the process, so it includes each runtime: about 120 MB of the C++ figure is
 the table it allocates at start, sized by its `-m 128` option.
 
-- **pysequitur builds the reference's grammar exactly**, all 46,219 rules of the
-  Python source and every rule of the four sample texts.
+- **pysequitur builds the reference's grammar exactly**, on either engine: all
+  46,219 rules of the Python source and every rule of the four sample texts.
+- **The compiled engine**, behind `Sequencer3` when `pysequitur_rs` is
+  installed, builds that grammar 24 times faster than the Python engine on
+  Revelation and 19 times on the source, the fastest build here on both, in a
+  little less memory.
 - **The JavaScript version in the reference repository loses text** on runs of
   three equal symbols, as reported in its
   [issue #3](https://github.com/craignm/sequitur/issues/3), open since 2017.
@@ -110,6 +120,7 @@ for CPython. Each idea was measured on the 1.6 MB of source against the fixed
 | Cython with typed `cdef` classes | another 2.6×, but needs a compiler to install: not adopted |
 | Cython on the untyped code | 15 % slower: rejected |
 | Integer digram keys instead of tuples | 15 % slower: rejected |
+| The core ported to Rust, used by `Sequencer3` when installed | 19×, the same grammar; optional, so installing pysequitur still needs no compiler |
 
 ## Correctness
 
@@ -153,6 +164,7 @@ about 1,900 of its subtests if put back.
 | October 2026 | The two port bugs fixed, test suite of the grammar's promises | 0.19 s |
 | October 2026 | `Sequencer3` on the linear-time core, 4× faster, grammar identical to the C++ reference | 0.06 s |
 | October 2026 | Analysis layer, MCP server, visualizer | |
+| October 2026 | Optional compiled engine in Rust for `Sequencer3`, grammar identical to the Python engine's | 0.002 s |
 
 The June 2025 figure for `Sequencer3` included extracting the grammar, which
 then took longer than building it.
