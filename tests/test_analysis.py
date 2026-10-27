@@ -109,6 +109,23 @@ class TestSingleDocument(unittest.TestCase):
         self.assertTrue(found['rules'])
         self.assertTrue(all('green eggs and ham' in r['text'] for r in found['rules']))
         self.assertEqual(a.find('no such phrase anywhere')['occurrences'], 0)
+        # a phrase typed on one line finds text broken over two
+        broken = a.find('I do not like them, Sam-I-am. I do not like green eggs and ham.')
+        self.assertGreater(broken['occurrences'], 0)
+        self.assertIn('\n', text[broken['positions'][0]['offset']:][:broken['positions'][0]['length']])
+
+    def test_occurrences_are_counted_in_the_text(self):
+        # The grammar parses three of the seven occurrences of Revelation's refrain as parts
+        # of other rules; the occurrences reported are still the seven in the text.
+        refrain = 'oexwnousakousatwtitopneumalegeitaisekklhsiais'
+        a = Analysis.from_text(sample('revelation.txt'), tokens='char')
+        repeat = [r for r in a.repeats(contains=refrain, sort_by='length', limit=50)['repeats'] if r['text'] == refrain][0]
+        self.assertEqual(repeat['occurrences'], 7)
+        detail = a.rule(repeat['rule'], max_positions=10)
+        self.assertEqual((detail['occurrences'], detail['parsed_as_rule']), (7, 4))
+        self.assertEqual([p['offset'] for p in detail['positions']], [2763, 3253, 3862, 5034, 5679, 6564, 7405])
+        top = a.repeats(sort_by='occurrences', min_chars=40, limit=1)['repeats'][0]
+        self.assertEqual((top['text'], top['occurrences']), (refrain, 7))
 
     def test_find_exact_rule(self):
         a = Analysis.from_text(sample('iamsam.txt'), tokens='word')
@@ -185,15 +202,18 @@ class TestDocuments(unittest.TestCase):
         for rule in range(1, len(a.rules)):
             self.assertEqual(set(occurrence_texts(a, rule)), {a.text(rule)})
 
-    def test_shared_phrases(self):
-        shared = self.a.shared(min_chars=20)
-        self.assertTrue(shared['phrases'])
+    def test_shared_passages(self):
+        shared = self.a.shared(min_chars=20, max_text=None, limit=100)
+        self.assertTrue(shared['compared'] and shared['passages'])
         texts = dict(self.docs)
-        for phrase in shared['phrases']:
-            self.assertGreaterEqual(len(phrase['documents']), 2)
-            for name in phrase['documents']:
-                self.assertIn(phrase['text'], texts[name])
-        self.assertTrue(shared['overlaps_computed'])
+        for passage in shared['passages']:
+            own = texts[passage['document']]
+            self.assertEqual(own[passage['offset']:passage['offset'] + passage['chars']], passage['text'])
+            self.assertTrue(passage['also_in'])
+        # mix is two passages, one from each of the other documents, kept apart
+        mix = self.a.shared(min_chars=20, document='mix')['passages']
+        self.assertEqual([(p['offset'], p['chars'], p['also_in']) for p in mix[:2]],
+                         [(0, 900, ['iamsam']), (900, 700, ['genesis'])])
         fractions = {(o['document'], o['other']): o['shared_fraction'] for o in shared['overlaps']}
         self.assertEqual(len(fractions), 6)
         self.assertTrue(all(0 <= f <= 1 for f in fractions.values()))
@@ -204,6 +224,12 @@ class TestDocuments(unittest.TestCase):
         self.assertEqual(fractions[('genesis', 'iamsam')], 0)
         # genesis repeats passages of its opening, which mix has, so more than 700 characters count
         self.assertGreater(fractions[('genesis', 'mix')], 700 / len(texts['genesis']))
+
+    def test_long_passages_keep_both_ends(self):
+        passage = self.a.shared(min_chars=20, document='mix', max_text=40)['passages'][0]
+        self.assertTrue(passage['truncated'])
+        self.assertTrue(passage['text'].startswith('I am Sam'))
+        self.assertTrue(passage['text'].endswith(sample('iamsam.txt')[880:900]))
 
     def test_document_filter(self):
         listing = self.a.repeats(document='genesis', limit=1000)

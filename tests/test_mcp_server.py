@@ -127,9 +127,10 @@ class TestTools(unittest.TestCase):
                      {'name': 'mix', 'text': sample('iamsam.txt')[:900] + sample('genesis1.txt')[:700]}]
         summary = self.ok('analyze', documents=documents)
         self.assertEqual([d['name'] for d in summary['documents']], ['genesis', 'iamsam.txt', 'mix'])
-        shared = self.ok('shared_phrases', analysis_id=summary['analysis_id'], min_chars=30)
-        self.assertTrue(shared['phrases'])
-        self.assertTrue(all(len(p['documents']) >= 2 for p in shared['phrases']))
+        shared = self.ok('shared_phrases', analysis_id=summary['analysis_id'], min_chars=30, document='mix')
+        self.assertTrue(shared['passages'])
+        self.assertTrue(all(p['document'] == 'mix' and p['also_in'] for p in shared['passages']))
+        self.assertEqual([p['chars'] for p in shared['passages'][:2]], [900, 700])
         self.assertEqual(len(shared['overlaps']), 6)
 
     def test_errors(self):

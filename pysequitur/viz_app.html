@@ -367,7 +367,12 @@ table.heat { width: auto; }
         if (p[p.length - 1] !== 0) p.push(0);
       }
     }
-    return { M: M, n: n, parents: parents, refs: refs, docStart: docStart, docEnd: docEnd, previews: new Map() };
+    var whole = M.docs.every(function (doc) { return doc.text.length === doc.chars; }), shown = 0;
+    M.docs.forEach(function (doc) { shown += doc.text.length; });
+    return { M: M, n: n, parents: parents, refs: refs, docStart: docStart, docEnd: docEnd, previews: new Map(),
+             texts: new Map(), lowered: [], whole: whole,
+             // finding every phrase in the text is affordable for the documents most people look at
+             allInText: whole && n * shown < 3e8 };
   }
 
   // the text of a rule, cut at limit characters
@@ -487,6 +492,34 @@ table.heat { width: auto; }
     return out;
   }
 
+  // where a rule's phrase occurs in the text, as [document, start] pairs, without overlapping.
+  // Sequitur's parse is greedy, so a phrase can occur more often than the grammar parses it as
+  // its rule. A document not shown whole falls back to the occurrences the grammar parses.
+  function textPositions(C, r) {
+    var found = C.texts.get(r);
+    if (found) return found;
+    var phrase = expand(C, r), fold = C.M.ignoreCase, grammar = null;
+    if (fold) phrase = phrase.toLowerCase();
+    found = [];
+    C.M.docs.forEach(function (doc, d) {
+      if (doc.text.length !== doc.chars) {
+        grammar = grammar || Array.from(positionsOf(C, [r]).get(r), decode);
+        grammar.forEach(function (p) { if (p[0] === d) found.push(p); });
+        return;
+      }
+      var text = doc.text;
+      if (fold) text = C.lowered[d] || (C.lowered[d] = text.toLowerCase());
+      for (var i = text.indexOf(phrase); i >= 0 && phrase; i = text.indexOf(phrase, i + phrase.length)) found.push([d, i]);
+    });
+    C.texts.set(r, found);
+    return found;
+  }
+
+  // times a rule's phrase occurs: in the text where that is affordable, else as the grammar parses it
+  function occurrences(C, r) {
+    return C.allInText ? textPositions(C, r).length : C.M.rules.occ[r];
+  }
+
   // the n phrases covering the most text, at least minChars long, that occur twice in
   // document d; plus the phrase `extra` (marked so) when it is not among them
   function arcRules(C, d, n, minChars, extra) {
@@ -497,13 +530,18 @@ table.heat { width: auto; }
     });
     var take = candidates.slice(0, C.M.docs.length > 1 ? 3 * n : n);
     if (extra && take.indexOf(extra) < 0) take.push(extra);
-    var positions = positionsOf(C, take), out = [], extraArc = null;
+    // all at once from the grammar when some document is not shown whole
+    var grammar = C.whole ? null : positionsOf(C, take), out = [], extraArc = null;
     take.forEach(function (r) {
       var starts = [];
-      positions.get(r).forEach(function (key) {
-        var p = decode(key);
-        if (p[0] === d) starts.push(p[1]);
-      });
+      if (grammar) {
+        grammar.get(r).forEach(function (key) {
+          var p = decode(key);
+          if (p[0] === d) starts.push(p[1]);
+        });
+      } else {
+        textPositions(C, r).forEach(function (p) { if (p[0] === d) starts.push(p[1]); });
+      }
       if (starts.length < 2) return;
       if (out.length < n) out.push({ r: r, starts: starts });
       else if (r === extra) extraArc = { r: r, starts: starts, extra: true };
@@ -514,7 +552,8 @@ table.heat { width: auto; }
 
   scope.SequiturViz = {
     prepare: prepare, expand: expand, preview: preview, positionsOf: positionsOf, decode: decode,
-    pieceAt: pieceAt, chainAt: chainAt, profile: profile, arcRules: arcRules
+    textPositions: textPositions, occurrences: occurrences, pieceAt: pieceAt, chainAt: chainAt,
+    profile: profile, arcRules: arcRules
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -526,7 +565,7 @@ table.heat { width: auto; }
   var SVG = 'http://www.w3.org/2000/svg';
   var mode = document.body.dataset.mode;
   var $ = function (id) { return document.getElementById(id); };
-  var M = null, C = null, arcData = [], positionCache = new Map(), lineCache = new Map();
+  var M = null, C = null, arcData = [], lineCache = new Map();
   var S = {};
 
   // DOM helpers. Text from the data only ever goes in through textContent.
@@ -568,12 +607,7 @@ table.heat { width: auto; }
 
   // positions of a rule as [document, start] pairs, cached
   function positions(r) {
-    var list = positionCache.get(r);
-    if (!list) {
-      list = Array.from(V.positionsOf(C, [r]).get(r), V.decode);
-      positionCache.set(r, list);
-    }
-    return list;
+    return V.textPositions(C, r);
   }
   function lineStarts(d) {
     var starts = lineCache.get(d);
@@ -627,7 +661,6 @@ table.heat { width: auto; }
   function load(data) {
     M = data;
     C = V.prepare(M);
-    positionCache = new Map();
     lineCache = new Map();
     S = { doc: 0, sel: 0, chain: null, outside: false, hover: 0, sort: 'coverage', filter: '', minLen: 1,
           arcN: 40, arcMin: M.tokenization === 'line' ? 30 : 12 };
@@ -762,7 +795,7 @@ table.heat { width: auto; }
       if (!g) { if (S.hover) { S.hover = 0; emphasise(); } hideTip(); return; }
       var r = +g.dataset.r;
       if (S.hover !== r) { S.hover = r; emphasise(); }
-      showTip(ev, '×' + fmt(M.rules.occ[r]), [{ text: oneLine(V.preview(C, r, 160)), mono: true },
+      showTip(ev, '×' + fmt(V.occurrences(C, r)), [{ text: oneLine(V.preview(C, r, 160)), mono: true },
         fmt(chars[r]) + ' characters · phrase R' + r], true);
     });
     root.addEventListener('pointerleave', function () { S.hover = 0; emphasise(); hideTip(); });
@@ -931,7 +964,7 @@ table.heat { width: auto; }
   // Detail panel
   function ruleChip(r) {
     return el('button', { class: 'chip', type: 'button', title: 'Phrase R' + r, onclick: function () { select(r, null); } },
-      oneLine(V.preview(C, r, 40)), el('span', { class: 'n', text: '×' + fmt(M.rules.occ[r]) }));
+      oneLine(V.preview(C, r, 40)), el('span', { class: 'n', text: '×' + fmt(V.occurrences(C, r)) }));
   }
 
   function phraseBlock(text, cut) {
@@ -987,8 +1020,10 @@ table.heat { width: auto; }
     box.append(el('div', { class: 'detail-head' }, el('h2', { text: 'Repeated phrase' }), el('span', { class: 'rid', text: 'R' + r })));
     box.append(phraseBlock(V.expand(C, r, 4000), R.chars[r] > 4000));
     var stats = el('dl', { class: 'stats' });
-    [['Occurrences', fmt(R.occ[r])], ['Length', fmt(R.chars[r]) + ' characters'], ['Tokens', fmt(R.tokens[r])],
-     ['Nesting depth', String(R.depth[r])], ['Uses in the grammar', fmt(C.refs[r])]].forEach(function (s) {
+    var occurs = positions(r).length;
+    [['Occurrences', fmt(occurs)]].concat(occurs !== R.occ[r] ? [['Parsed as this phrase', fmt(R.occ[r])]] : [],
+     [['Length', fmt(R.chars[r]) + ' characters'], ['Tokens', fmt(R.tokens[r])],
+     ['Nesting depth', String(R.depth[r])], ['Uses in the grammar', fmt(C.refs[r])]]).forEach(function (s) {
       stats.append(el('div', null, el('dt', { text: s[0] }), el('dd', { text: s[1] })));
     });
     box.append(stats);
@@ -1033,8 +1068,8 @@ table.heat { width: auto; }
       rows.push(r);
     }
     var key = {
-      coverage: function (r) { return R.chars[r] * R.occ[r]; }, length: function (r) { return R.chars[r]; },
-      occurrences: function (r) { return R.occ[r]; }, depth: function (r) { return R.depth[r]; }
+      coverage: function (r) { return R.chars[r] * V.occurrences(C, r); }, length: function (r) { return R.chars[r]; },
+      occurrences: function (r) { return V.occurrences(C, r); }, depth: function (r) { return R.depth[r]; }
     }[S.sort];
     rows.sort(function (a, b) { return key(b) - key(a) || R.chars[b] - R.chars[a] || a - b; });
     var head = el('tr');
@@ -1047,8 +1082,8 @@ table.heat { width: auto; }
     rows.slice(0, 200).forEach(function (r) {
       var row = el('tr', { tabindex: '0', 'data-r': r, 'aria-selected': String(r === S.sel) },
         el('td', { class: 'phrase-cell', text: oneLine(V.preview(C, r, 120)) + (R.chars[r] > 120 ? '…' : '') }),
-        el('td', { class: 'num', text: fmt(R.occ[r]) }), el('td', { class: 'num', text: fmt(R.chars[r]) }),
-        el('td', { class: 'num', text: fmt(R.chars[r] * R.occ[r]) }), el('td', { class: 'num', text: String(R.depth[r]) }));
+        el('td', { class: 'num', text: fmt(V.occurrences(C, r)) }), el('td', { class: 'num', text: fmt(R.chars[r]) }),
+        el('td', { class: 'num', text: fmt(R.chars[r] * V.occurrences(C, r)) }), el('td', { class: 'num', text: String(R.depth[r]) }));
       body.append(row);
     });
     body.addEventListener('click', function (ev) {
@@ -1093,10 +1128,10 @@ table.heat { width: auto; }
     section.hidden = !M.shared;
     if (!M.shared) return;
     var names = M.docs.map(function (d) { return d.name; }), value = {};
-    $('overlap-caption').textContent = M.shared.overlaps_computed
+    $('overlap-caption').textContent = M.shared.compared
       ? 'Each cell is the share of the row\'s document that also appears word for word in the column\'s document, in passages of at least ' + M.shared.min_chars + ' characters.'
       : 'The documents are too large to compare word for word here; the shared passages below come from the grammar.';
-    $('overlap').hidden = !M.shared.overlaps_computed;
+    $('overlap').hidden = !M.shared.compared;
     M.shared.overlaps.forEach(function (o) { value[o.document + '\u0000' + o.other] = o.shared_fraction; });
     var head = el('tr', null, el('th', { scope: 'col', text: 'Share of ↓ also in →' }));
     names.forEach(function (n) { head.append(el('th', { scope: 'col', text: n })); });
@@ -1118,19 +1153,20 @@ table.heat { width: auto; }
     overlap.append(el('table', { class: 'heat' }, el('thead', null, head), body));
 
     var rows = el('tbody');
-    M.shared.phrases.forEach(function (p) {
-      rows.append(el('tr', { tabindex: '0', 'data-r': p.rule },
+    M.shared.passages.forEach(function (p) {
+      var d = names.indexOf(p.document), offset = p.offset;
+      rows.append(el('tr', { tabindex: '0', 'data-d': d, 'data-offset': offset },
         el('td', { class: 'phrase-cell', text: oneLine(p.text) }), el('td', { class: 'num', text: fmt(p.chars) }),
-        el('td', { text: Object.keys(p.documents).map(function (n) { return n + ' ×' + p.documents[n]; }).join(', ') })));
+        el('td', { text: p.document + ', line ' + fmt(p.line) }), el('td', { text: p.also_in.join(', ') })));
     });
     rows.addEventListener('click', function (ev) {
       var row = ev.target.closest('tr');
-      if (row) select(+row.dataset.r, null);
+      if (row) goTo(+row.dataset.d, +row.dataset.offset);
     });
     var table = $('shared-table');
     table.textContent = '';
     table.append(el('table', null, el('thead', null, el('tr', null, el('th', { text: 'Passage' }),
-      el('th', { class: 'num', text: 'Length' }), el('th', { text: 'Occurrences' }))), rows));
+      el('th', { class: 'num', text: 'Length' }), el('th', { text: 'In' }), el('th', { text: 'Also in' }))), rows));
   }
 
   // Controls
@@ -1150,7 +1186,7 @@ table.heat { width: auto; }
     var span = ev.target.closest && ev.target.closest('.rep');
     if (!span) { hideTip(); return; }
     var r = +span.dataset.r;
-    showTip(ev, '×' + fmt(M.rules.occ[r]), [{ text: oneLine(V.preview(C, r, 120)), mono: true }, 'click to inspect the innermost phrase here'], true);
+    showTip(ev, '×' + fmt(V.occurrences(C, r)), [{ text: oneLine(V.preview(C, r, 120)), mono: true }, 'click to inspect the innermost phrase here'], true);
   });
   $('text').addEventListener('pointerleave', hideTip);
   $('arc-n').addEventListener('input', function () { S.arcN = +this.value; renderArcs(); });
@@ -1226,9 +1262,20 @@ table.heat { width: auto; }
     });
   }
 
+  // a link such as report.html#doc=1&rule=12 opens on that document and phrase
+  function follow() {
+    var hash = new URLSearchParams(location.hash.slice(1)), d = +hash.get('doc'), r = +hash.get('rule');
+    if (!M) return;
+    if (d > 0 && d < M.docs.length) showDocument(d);
+    if (r > 0 && r < C.n) select(r, null);
+  }
+  window.addEventListener('hashchange', follow);
+
   var data = JSON.parse($('model').textContent);
-  if (data) load(data);
-  else if (mode === 'app') $('input').hidden = false;
+  if (data) {
+    load(data);
+    follow();
+  } else if (mode === 'app') $('input').hidden = false;
   else $('main').hidden = true;
 })();
 </script>

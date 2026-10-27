@@ -103,7 +103,10 @@ def model(analysis, title=None, max_shown=MAX_SHOWN):
     if len(analysis.documents) > 1:
         data['rules']['docs'] = [[] if counts is None else [x for d, k in sorted(counts.items()) for x in (d, k)]
                                  for counts in analysis._per_document]
-        data['shared'] = analysis.shared(min_chars=20, limit=30)
+        data['shared'] = shared = analysis.shared(min_chars=20, limit=30)
+        names = [d.name for d in analysis.documents]
+        for passage in shared['passages']:
+            passage['offset'] = utf16(names.index(passage['document']), passage['offset'])
     return data
 
 

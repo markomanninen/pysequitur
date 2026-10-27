@@ -223,24 +223,28 @@ def create_server(roots=None, max_chars=5000000, max_analyses=16):
     ) -> PhraseMatches:
         """
         Where a phrase occurs, whether it is itself a repeat (exact_rule), and which repeats contain
-        its occurrences. Use it to place any text in the structure of the documents.
+        its occurrences. Use it to place any text in the structure of the documents. Whitespace in the
+        phrase matches any whitespace in the text, line breaks included.
         """
         return _query(store.get(analysis_id).find, phrase, max_positions=max_positions, context=context_chars)
 
     @server.tool(annotations=READ_ONLY)
     def shared_phrases(
         analysis_id: AnalysisId,
-        min_documents: Annotated[int, Field(ge=2, description='fewest documents a phrase must occur in')] = 2,
-        min_chars: Annotated[int, Field(ge=1)] = 20,
+        min_chars: Annotated[int, Field(ge=1, description='shortest shared passage, in characters')] = 20,
+        document: Annotated[Optional[str], Field(
+            description='only passages in this document, e.g. the one suspected of copying')] = None,
+        min_documents: Annotated[int, Field(ge=2, description='fewest documents a passage must occur in')] = 2,
         limit: Annotated[int, Field(ge=1, le=200)] = 20,
+        max_text: Annotated[int, Field(ge=20, le=100000, description='longer passages show both ends')] = 300,
     ) -> SharedPhrases:
         """
-        For an analysis of several documents: the longest passages they have in common, and for each
-        pair of documents the share of one that also appears word for word in the other, in passages
-        of at least min_chars characters.
+        For an analysis of several documents: the passages of at least min_chars characters that
+        documents have word for word, longest first, each with its place and the other documents
+        that have it; and for each pair of documents, the share of one that also appears in the other.
         """
         return _query(store.get(analysis_id).shared, min_documents=min_documents, min_chars=min_chars,
-                      limit=limit)
+                      limit=limit, max_text=max_text, document=document)
 
     @server.tool(annotations=READ_ONLY)
     def repetition_profile(

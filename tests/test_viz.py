@@ -75,7 +75,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual([d['name'] for d in data['docs']], ['genesis', 'iamsam', 'mix'])
         self.assertTrue(all(len(d['text']) <= 1000 for d in data['docs']))
         self.assertEqual(len(data['rules']['docs']), len(a.rules))
-        self.assertTrue(data['shared']['phrases'])
+        self.assertTrue(data['shared']['passages'])
         self.assertIsNone(model(analyses()['lines'])['shared'])
 
 
@@ -115,10 +115,11 @@ new Function(fs.readFileSync(process.argv[2], 'utf8'))();
 const V = globalThis.SequiturViz, M = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
 const C = V.prepare(M), rules = [];
 for (let r = 1; r < C.n; r++) rules.push(r);
-const positions = V.positionsOf(C, rules), out = { positions: {}, texts: {}, chains: [], profiles: [] };
+const positions = V.positionsOf(C, rules), out = { positions: {}, texts: {}, inText: {}, chains: [], profiles: [] };
 for (const r of rules) {
   out.positions[r] = Array.from(positions.get(r), V.decode);
   out.texts[r] = V.expand(C, r);
+  out.inText[r] = V.textPositions(C, r);
 }
 out.chains = JSON.parse(process.argv[4]).map(p => V.chainAt(C, p[0], p[1]));
 out.profiles = M.docs.map((doc, d) => V.profile(C, d, 7).map(b => b.value));
@@ -153,6 +154,9 @@ console.log(JSON.stringify(out));
                         expected.append([d, len(a.documents[d].text[:start].encode('utf-16-le')) // 2])
                     self.assertEqual(out['positions'][str(r)], expected, 'rule %d' % r)
                     self.assertEqual(out['texts'][str(r)], a.text(r))
+                    in_text = [[d, len(a.documents[d].text[:start].encode('utf-16-le')) // 2]
+                               for d, start, _ in a.text_positions(r)]
+                    self.assertEqual(out['inText'][str(r)], in_text, 'rule %d in the text' % r)
                 if not astral:
                     for (d, o), chain in zip(samples, out['chains']):
                         self.assertEqual(chain[-1] if chain else 0, a._innermost(d, o, o + 1), 'offset %d' % o)
